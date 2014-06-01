@@ -45,7 +45,7 @@ def main():
 
     banner()  # Run the banner!
 
-    if len(sys.argv) != 4:
+    if not len(sys.argv):
         print((t.red(" [*] ") + "Not Enough Arguments!"))
         print((t.red(" [*] ") + "Example: ./liffy.py --url http://target/files.php?file= --data\n"))
         sys.exit(0)
@@ -56,6 +56,8 @@ def main():
     parser.add_argument("--data", help="data technique", action="store_true")
     parser.add_argument("--input", help="input technique", action="store_true")
     parser.add_argument("--expect", help="expect technique", action="store_true")
+    parser.add_argument("--access", help="access logs technique", action="store_true")
+    parser.add_argument("--location", help="access logs location")
     #parser.add_argument("--cookies", help="session cookies")
     args = parser.parse_args()
 
@@ -76,22 +78,23 @@ def main():
             print(t.red(" [!] ") + "Target URL Looks Good!")
             if args.data:
                 print(t.red(" [!] ") + "Data Technique Selected!")
-
                 d = core.Data(url)
                 d.execute_data()
-
             elif args.input:
                 print(t.red(" [!] ") + "Input Technique Selected!")
-
                 i = core.Input(url)
                 i.execute_input()
-
             elif args.expect:
                 print(t.red(" [!] ") + "Expect Technique Selected!")
-
                 e = core.Expect(url)
                 e.execute_expect()
-
+            elif args.access:
+                if not args.location:
+                    print(t.red(" [!] ") + "Log Location Not Provided!")
+                else:
+                    l = args.location
+                    a = core.Logs(url, l)
+                    a.execute_logs()
             else:
                 print(t.red(" [!] ") + "Technique Not Selected!")
                 sys.exit(0)

