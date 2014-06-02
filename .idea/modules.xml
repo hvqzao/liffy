@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../akaspy/.idea/akaspy.iml" filepath="$PROJECT_DIR$/../akaspy/.idea/akaspy.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/liffy.iml" filepath="$PROJECT_DIR$/.idea/liffy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../waybay/.idea/waybay.iml" filepath="$PROJECT_DIR$/../waybay/.idea/waybay.iml" />
     </modules>
   </component>
 </project>
