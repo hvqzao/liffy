@@ -3,6 +3,8 @@ liffy
 
 Liffy is a tool to exploit local file inclusion vulnerability using the built-in wrappers php://input, data://, and a process control extension called 'expect'.
 
+* Updates * Now comes with ability to use poisoned Apache access logs, and php://filter for code execution and arbitrary file reads
+
 
 Install
 =======
