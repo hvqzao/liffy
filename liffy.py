@@ -57,6 +57,7 @@ def main():
     parser.add_argument("--input", help="input technique", action="store_true")
     parser.add_argument("--expect", help="expect technique", action="store_true")
     parser.add_argument("--access", help="access logs technique", action="store_true")
+    parser.add_argument("--filter", help="filter technique", action="store_true")
     parser.add_argument("--location", help="access logs location")
     #parser.add_argument("--cookies", help="session cookies")
     args = parser.parse_args()
@@ -95,6 +96,10 @@ def main():
                     l = args.location
                     a = core.Logs(url, l)
                     a.execute_logs()
+            elif args.filter:
+                print(t.red(" [!] ") + "Filter Technique Selected!")
+                f = core.Filter(url)
+                f.execute_filter()
             else:
                 print(t.red(" [!] ") + "Technique Not Selected!")
                 sys.exit(0)
