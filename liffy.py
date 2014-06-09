@@ -65,6 +65,7 @@ def main():
 
     # Assign argument values
     url = args.url
+    nostager = args.nostager
     #cookies = args.cookies
 
     print(t.green(" [*] ") + "Checking Target: " + url)
