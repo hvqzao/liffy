@@ -59,6 +59,7 @@ def main():
     parser.add_argument("--access", help="access logs technique", action="store_true")
     parser.add_argument("--filter", help="filter technique", action="store_true")
     parser.add_argument("--location", help="access logs location")
+    parser.add_argument("--no-stager", help="execute payload directly, do not use stager")
     #parser.add_argument("--cookies", help="session cookies")
     args = parser.parse_args()
 
