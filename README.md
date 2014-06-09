@@ -1,9 +1,17 @@
-liffy
+Liffy
 =====
 
-Liffy is a tool to exploit local file inclusion vulnerability using the built-in wrappers php://input, data://, and a process control extension called 'expect'.
+Liffy is a Local File Inclusion Exploitation tool.  
 
-* Updates * Now comes with ability to use poisoned Apache access logs, and php://filter for code execution and arbitrary file reads
+Current features include: 
+
+  - data:// for code execution
+  - expect:// for code execution
+  - input:// for code execution
+  - filter:// for arbitrary file reads
+  - Apache access.log poisoning
+  - Direct payload delivery with no stager
+
 
 
 Install
