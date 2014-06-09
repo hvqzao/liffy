@@ -59,11 +59,13 @@ def main():
     parser.add_argument("--access", help="access logs technique", action="store_true")
     parser.add_argument("--filter", help="filter technique", action="store_true")
     parser.add_argument("--location", help="access logs location")
+    parser.add_argument("--nostager", help="execute payload directly, do not use stager", action="store_true")
     #parser.add_argument("--cookies", help="session cookies")
     args = parser.parse_args()
 
     # Assign argument values
     url = args.url
+    nostager = args.nostager
     #cookies = args.cookies
 
     print(t.green(" [*] ") + "Checking Target: " + url)
@@ -79,22 +81,22 @@ def main():
             print(t.red(" [!] ") + "Target URL Looks Good!")
             if args.data:
                 print(t.red(" [!] ") + "Data Technique Selected!")
-                d = core.Data(url)
+                d = core.Data(url, nostager)
                 d.execute_data()
             elif args.input:
                 print(t.red(" [!] ") + "Input Technique Selected!")
-                i = core.Input(url)
+                i = core.Input(url, nostager)
                 i.execute_input()
             elif args.expect:
                 print(t.red(" [!] ") + "Expect Technique Selected!")
-                e = core.Expect(url)
+                e = core.Expect(url, nostager)
                 e.execute_expect()
             elif args.access:
                 if not args.location:
                     print(t.red(" [!] ") + "Log Location Not Provided!")
                 else:
                     l = args.location
-                    a = core.Logs(url, l)
+                    a = core.Logs(url, l, nostager)
                     a.execute_logs()
             elif args.filter:
                 print(t.red(" [!] ") + "Filter Technique Selected!")

