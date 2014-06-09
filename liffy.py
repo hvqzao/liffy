@@ -80,22 +80,22 @@ def main():
             print(t.red(" [!] ") + "Target URL Looks Good!")
             if args.data:
                 print(t.red(" [!] ") + "Data Technique Selected!")
-                d = core.Data(url)
+                d = core.Data(url, no-stager)
                 d.execute_data()
             elif args.input:
                 print(t.red(" [!] ") + "Input Technique Selected!")
-                i = core.Input(url)
+                i = core.Input(url, no-stager)
                 i.execute_input()
             elif args.expect:
                 print(t.red(" [!] ") + "Expect Technique Selected!")
-                e = core.Expect(url)
+                e = core.Expect(url, no-stager)
                 e.execute_expect()
             elif args.access:
                 if not args.location:
                     print(t.red(" [!] ") + "Log Location Not Provided!")
                 else:
                     l = args.location
-                    a = core.Logs(url, l)
+                    a = core.Logs(url, l, no-stager)
                     a.execute_logs()
             elif args.filter:
                 print(t.red(" [!] ") + "Filter Technique Selected!")
