@@ -10,6 +10,7 @@ Current features include:
   - input:// for code execution
   - filter:// for arbitrary file reads
   - Apache access.log poisoning
+  - Linux auth.log SSH poisoning
   - Direct payload delivery with no stager
 
 
