@@ -94,14 +94,16 @@ def main():
                 e.execute_expect()
             elif args.access:
                 if not args.location:
-                    print(t.red(" [!] ") + "Log Location Not Provided!")
+                    print(t.red(" [!] ") + "Log Location Not Provided! Using default.")
+                    l = '/var/log/apache2/access.log'
                 else:
                     l = args.location
-                    a = core.Logs(url, l, nostager)
-                    a.execute_logs()
+                a = core.Logs(url, l, nostager)
+                a.execute_logs()
             elif args.ssh:
                 if not args.location:
-                    print(t.red(" [!] ") + "Log Location Not Provided!")
+                    print(t.red(" [!] ") + "Log Location Not Provided! Using default.")
+                    l = '/var/log/auth.log'
                 else:
                     l = args.location
                     a = core.SSHLogs(url, l)
