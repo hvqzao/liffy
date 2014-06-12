@@ -1,4 +1,5 @@
 __author__ = 'rotlogix'
+__author__ = 'unicornFurnace'
 
 from blessings import Terminal
 from shell_generator import Generator
