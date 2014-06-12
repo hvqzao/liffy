@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+__author__ = 'rotlogix'
+__author__ = 'unicornFurnace'
 
 import argparse
 import sys
