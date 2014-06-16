@@ -9,9 +9,11 @@ Current features include:
   - expect:// for code execution
   - input:// for code execution
   - filter:// for arbitrary file reads
+  - /proc/self/environ for code execution in CGI mode
   - Apache access.log poisoning
   - Linux auth.log SSH poisoning
   - Direct payload delivery with no stager
+  - Support for absolute and relative paths 
 
 
 
