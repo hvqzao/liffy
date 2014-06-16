@@ -61,14 +61,17 @@ def main():
     parser.add_argument("--access", help="access logs technique", action="store_true")
     parser.add_argument("--ssh", help="ssh logs technique", action="store_true")
     parser.add_argument("--filter", help="filter technique", action="store_true")
-    parser.add_argument("--location", help="access logs location")
+    parser.add_argument("--generic", help="generic file include technique", action="store_true")
+    parser.add_argument("--location", help="path to target file (access log, auth log, etc.)")
     parser.add_argument("--nostager", help="execute payload directly, do not use stager", action="store_true")
+    parser.add_argument("--relative", help="use path traversal sequences for attack", action="store_true")
     #parser.add_argument("--cookies", help="session cookies")
     args = parser.parse_args()
 
     # Assign argument values
     url = args.url
     nostager = args.nostager
+    relative = args.relative
     #cookies = args.cookies
 
     print(t.green(" [*] ") + "Checking Target: " + url)
@@ -100,16 +103,24 @@ def main():
                     l = '/var/log/apache2/access.log'
                 else:
                     l = args.location
-                a = core.Logs(url, l, nostager)
+                a = core.Logs(url, l, nostager, relative)
                 a.execute_logs()
+            elif args.generic:
+                if not args.location:
+                    print(t.red(" [!] ") + "File Location Not Provided! Using default.")
+                    l = '/etc/passwd'
+                else:
+                    l = args.location
+                a = core.Generic(url, l, relative)
+                a.execute_generic()
             elif args.ssh:
                 if not args.location:
                     print(t.red(" [!] ") + "Log Location Not Provided! Using default.")
                     l = '/var/log/auth.log'
                 else:
                     l = args.location
-                    a = core.SSHLogs(url, l)
-                    a.execute_ssh()
+                a = core.SSHLogs(url, l, relative)
+                a.execute_ssh()
             elif args.filter:
                 print(t.red(" [!] ") + "Filter Technique Selected!")
                 f = core.Filter(url)

