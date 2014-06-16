@@ -58,10 +58,10 @@ def main():
     parser.add_argument("--data", help="data technique", action="store_true")
     parser.add_argument("--input", help="input technique", action="store_true")
     parser.add_argument("--expect", help="expect technique", action="store_true")
+    parser.add_argument("--environ", help="/proc/self/environ technique", action="store_true")
     parser.add_argument("--access", help="access logs technique", action="store_true")
     parser.add_argument("--ssh", help="ssh logs technique", action="store_true")
     parser.add_argument("--filter", help="filter technique", action="store_true")
-    parser.add_argument("--generic", help="generic file include technique", action="store_true")
     parser.add_argument("--location", help="path to target file (access log, auth log, etc.)")
     parser.add_argument("--nostager", help="execute payload directly, do not use stager", action="store_true")
     parser.add_argument("--relative", help="use path traversal sequences for attack", action="store_true")
@@ -97,6 +97,10 @@ def main():
                 print(t.red(" [!] ") + "Expect Technique Selected!")
                 e = core.Expect(url, nostager)
                 e.execute_expect()
+            elif args.environ:
+                print(t.red(" [!] ") + "/proc/self/environ Technique Selected!")
+                i = core.Environ(url, nostager, relative)
+                i.execute_environ()
             elif args.access:
                 if not args.location:
                     print(t.red(" [!] ") + "Log Location Not Provided! Using default.")
@@ -105,14 +109,6 @@ def main():
                     l = args.location
                 a = core.Logs(url, l, nostager, relative)
                 a.execute_logs()
-            elif args.generic:
-                if not args.location:
-                    print(t.red(" [!] ") + "File Location Not Provided! Using default.")
-                    l = '/etc/passwd'
-                else:
-                    l = args.location
-                a = core.Generic(url, l, relative)
-                a.execute_generic()
             elif args.ssh:
                 if not args.location:
                     print(t.red(" [!] ") + "Log Location Not Provided! Using default.")
