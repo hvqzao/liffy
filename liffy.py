@@ -42,14 +42,19 @@ def main():
 
         sys.stdout.write("\n")
 
-    banner()  # Run the banner!
+    #---------------------------------------------------------------------------------------------------
+
+    banner()
 
     if not len(sys.argv):
-        print((t.red(" [*] ") + "Not Enough Arguments!"))
-        print((t.red(" [*] ") + "Example: ./liffy.py --url http://target/files.php?file= --data\n"))
+        print(t.red(" [*] ") + "Not Enough Arguments!")
+        print(t.red(" [*] ") + "Example: ./liffy.py --url http://target/files.php?file= --data\n")
         sys.exit(0)
 
-    # Setup arguments
+    #---------------------------------------------------------------------------------------------------
+
+    """ Command Line Arguments """
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", help="target url")
     parser.add_argument("--data", help="data technique", action="store_true")
@@ -62,14 +67,21 @@ def main():
     parser.add_argument("--location", help="path to target file (access log, auth log, etc.)")
     parser.add_argument("--nostager", help="execute payload directly, do not use stager", action="store_true")
     parser.add_argument("--relative", help="use path traversal sequences for attack", action="store_true")
-    #parser.add_argument("--cookies", help="session cookies")
+    parser.add_argument("--cookies", help="session cookies")
     args = parser.parse_args()
 
-    # Assign argument values
+    #---------------------------------------------------------------------------------------------------
+
+    """ Assign argument values """
+
     url = args.url
     nostager = args.nostager
     relative = args.relative
-    #cookies = args.cookies
+    c = args.cookies
+
+    #---------------------------------------------------------------------------------------------------
+
+    """ Check to make sure target is actually up """
 
     print(t.green(" [*] ") + "Checking Target: " + url)
     parsed = urlparse.urlsplit(url)
@@ -84,52 +96,53 @@ def main():
             print(t.red(" [!] ") + "Target URL Looks Good!")
             if args.data:
                 print(t.red(" [!] ") + "Data Technique Selected!")
-                d = core.Data(url, nostager)
+                d = core.Data(url, nostager, c)
                 d.execute_data()
             elif args.input:
                 print(t.red(" [!] ") + "Input Technique Selected!")
-                i = core.Input(url, nostager)
+                i = core.Input(url, nostager, c)
                 i.execute_input()
             elif args.expect:
                 print(t.red(" [!] ") + "Expect Technique Selected!")
-                e = core.Expect(url, nostager)
+                e = core.Expect(url, nostager, c)
                 e.execute_expect()
             elif args.environ:
                 print(t.red(" [!] ") + "/proc/self/environ Technique Selected!")
-                i = core.Environ(url, nostager, relative)
+                i = core.Environ(url, nostager, relative, c)
                 i.execute_environ()
             elif args.access:
                 if not args.location:
-                    print(t.red(" [!] ") + "Log Location Not Provided! Using default.")
+                    print(t.red(" [!] ") + "Log Location Not Provided! Using Default")
                     l = '/var/log/apache2/access.log'
                 else:
                     l = args.location
-                a = core.Logs(url, l, nostager, relative)
+                a = core.Logs(url, l, nostager, relative, c)
                 a.execute_logs()
             elif args.ssh:
                 if not args.location:
-                    print(t.red(" [!] ") + "Log Location Not Provided! Using default.")
+                    print(t.red(" [!] ") + "Log Location Not Provided! Using Default")
                     l = '/var/log/auth.log'
                 else:
                     l = args.location
-                a = core.SSHLogs(url, l, relative)
+                a = core.SSHLogs(url, l, relative, c)
                 a.execute_ssh()
             elif args.filter:
                 print(t.red(" [!] ") + "Filter Technique Selected!")
-                f = core.Filter(url)
+                f = core.Filter(url, c)
                 f.execute_filter()
             else:
                 print(t.red(" [!] ") + "Technique Not Selected!")
                 sys.exit(0)
-
     except requests.exceptions.RequestException as e:
         print(t.red(" [*] HTTP Error ") + str(e))
+
+    #---------------------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print(" [*] You hit Ctrl+C ")
+        print(" [*] Keyboard Interrupt! ")
         pass
 
