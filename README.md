@@ -14,6 +14,7 @@ Current features include:
   - Linux auth.log SSH poisoning
   - Direct payload delivery with no stager
   - Support for absolute and relative paths 
+  - Support for cookies
 
 
 
