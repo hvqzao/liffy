@@ -12,7 +12,6 @@ import textwrap
 import urlparse
 import datetime
 import subprocess
-import os
 from urllib import quote_plus
 from os import system
 
