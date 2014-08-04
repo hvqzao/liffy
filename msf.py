@@ -1,6 +1,7 @@
 __author__ = 'rotlogix'
 
 import urlparse
+import datetime
 from blessings import Terminal
 
 
@@ -27,5 +28,5 @@ class Payload:
         f = file("php_listener.rc", "w")
         f.write(opt)
         f.close()
-        print Payload.t.green(" [*] ") + "Generated Metasploit Resource File"
-        print Payload.t.red(" [!] ") + "Load Metasploit: msfconsole -r php_listener.rc"
+        print Payload.t.red("[{0}] ".format(datetime.datetime.now())) + "Generated Metasploit Resource File"
+        print Payload.t.red("[{0}] ".format(datetime.datetime.now())) + "Load Metasploit: msfconsole -r php_listener.rc"
