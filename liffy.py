@@ -145,7 +145,7 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        t = Terminal()
-        print(t.red(" [{0}] ".format(datetime.datetime.now())) + "Keyboard Interrupt!")
+        main_t = Terminal()
+        print(main_t.red(" [{0}] ".format(datetime.datetime.now())) + "Keyboard Interrupt!")
         sys.exit(0)
 
