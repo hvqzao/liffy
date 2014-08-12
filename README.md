@@ -16,14 +16,15 @@ Current features include:
   - Support for absolute and relative paths 
   - Support for cookies
 
-
+! I have had issues with access log poisoning on current versions of Apache.  This not an issue with the payload delivery and or poisoning.  This is more of an issue with the request after the poisoning to kick off your shell.  This may require a browser refresh. !
 
 Install
 =======
 
 Liffy requires the following libraries: requests, argparse, blessings, urlparse, daemon
 
-* Update * Liffy now has built-in web serving functionality for all techniques that use the staged approach.  This is built upon Python's simpleHTTPServer module, and is being daemonized once spawned as a process within core.py.  I have had some issues with socket reuse and the child process not being killed correctly, so QA would be appreciated, and or suggestions on how to design it better. 
+*Update* - Liffy now has built-in web serving functionality for all techniques that use the staged approach.  This is built upon Python's simpleHTTPServer module, and is being daemonized once spawned as a process within core.py.  I have had some issues with socket reuse and the child process not being killed correctly, so QA would be appreciated, and or suggestions on how to design it better. 
+
 
 Example Usage 
 ==============
