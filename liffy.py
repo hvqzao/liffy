@@ -135,7 +135,7 @@ def main():
             else:
                 print(t.red("[{0}] ".format(datetime.datetime.now())) + "Technique Not Selected!")
                 sys.exit(0)
-    except requests.exceptions.RequestException as e:
+    except requests.HTTPError as e:
         print(t.red("[{0}] HTTP Error!".format(datetime.datetime.now())) + str(e))
 
     #---------------------------------------------------------------------------------------------------
