@@ -121,3 +121,8 @@ msf exploit(handler) > [*] Sending stage (40551 bytes) to 10.0.0.11
 msf exploit(handler) >
 
 ```
+
+Sidenote
+========
+
+Original release repository https://github.com/rotlogix/liffy is no longer available.
